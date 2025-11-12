@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechStore - Tu tienda de tecnología</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo">Tech<span>Store</span></a>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="#">Inicio</a></li>
+                    <li><a href="#products">Productos</a></li>
+                    <li><a href="#about">Nosotros</a></li>
+                    <li><a href="#contact">Contacto</a></li>
+                    <li class="cart-icon" id="cartIcon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </li>
+                </ul>
+                <div class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Los Mejores Productos Tecnológicos</h1>
+            <p>Descubre nuestra amplia selección de dispositivos electrónicos, accesorios y gadgets al mejor precio del mercado.</p>
+            <a href="#products" class="btn">Explorar Productos</a>
+        </div>
+    </section>
+
+    <!-- Filtros -->
+    <section class="filters">
+        <div class="container filter-container">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar productos...">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="category-filter">
+                <select id="categoryFilter">
+                    <option value="all">Todas las categorías</option>
+                    <option value="laptops">Laptops</option>
+                    <option value="smartphones">Smartphones</option>
+                    <option value="tablets">Tablets</option>
+                    <option value="consolas">Consolas</option>
+                    <option value="accesorios">Accesorios</option>
+                    <option value="componentes">Componentes</option>
+                </select>
+            </div>
+            <div class="price-filter">
+                <select id="priceFilter">
+                    <option value="all">Todos los precios</option>
+                    <option value="0-100">Hasta $100</option>
+                    <option value="100-500">$100 - $500</option>
+                    <option value="500-1000">$500 - $1000</option>
+                    <option value="1000-2000">$1000 - $2000</option>
+                    <option value="2000+">Más de $2000</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Productos -->
+    <section class="products-section" id="products">
+        <div class="container">
+            <h2 class="section-title">Nuestros Productos</h2>
+            <div class="products-grid" id="productsGrid">
+                <!-- Los productos se cargarán aquí con JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección Nosotros -->
+    <section class="about-section" id="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2>Sobre TechStore</h2>
+                    <p>Somos una empresa líder en venta de productos tecnológicos, comprometida con ofrecer la mejor calidad y servicio a nuestros clientes. Con más de 10 años en el mercado, nos hemos consolidado como la tienda de confianza para los amantes de la tecnología.</p>
+                    <div class="features">
+                        <div class="feature">
+                            <i class="fas fa-shipping-fast"></i>
+                            <h3>Envío Gratis</h3>
+                            <p>En compras mayores a $500</p>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>Garantía Extendida</h3>
+                            <p>Hasta 2 años en todos los productos</p>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-headset"></i>
+                            <h3>Soporte 24/7</h3>
+                            <p>Asistencia técnica especializada</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Nuestra tienda">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Carrito de compras -->
+    <div class="overlay" id="overlay"></div>
+    <div class="cart-modal" id="cartModal">
+        <div class="cart-header">
+            <h2 class="cart-title">Tu Carrito</h2>
+            <button class="close-cart" id="closeCart">&times;</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Los elementos del carrito se cargarán aquí -->
+        </div>
+        <div class="cart-total">
+            <span>Total:</span>
+            <span id="cartTotal">$0.00</span>
+        </div>
+        <button class="checkout-btn" id="checkoutBtn">Finalizar Compra</button>
+    </div>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>TechStore</h3>
+                    <p>Tu tienda de confianza para productos tecnológicos de última generación.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Enlaces Rápidos</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Inicio</a></li>
+                        <li><a href="#products">Productos</a></li>
+                        <li><a href="#about">Nosotros</a></li>
+                        <li><a href="#contact">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Categorías</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" data-category="laptops">Laptops</a></li>
+                        <li><a href="#" data-category="smartphones">Smartphones</a></li>
+                        <li><a href="#" data-category="tablets">Tablets</a></li>
+                        <li><a href="#" data-category="consolas">Consolas</a></li>
+                        <li><a href="#" data-category="accesorios">Accesorios</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contacto</h3>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-map-marker-alt"></i> Av. Principal 123, Ciudad</li>
+                        <li><i class="fas fa-phone"></i> +1 234 567 890</li>
+                        <li><i class="fas fa-envelope"></i> info@techstore.com</li>
+                        <li><i class="fas fa-clock"></i> Lun-Vie: 9:00 - 18:00</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 TechStore. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="scrip.js"></script>
+</body>
+</html>
