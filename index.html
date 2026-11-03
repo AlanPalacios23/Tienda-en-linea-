@@ -1,139 +1,92 @@
 <!doctype html>
 <html lang="es-MX">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#171717">
-  <meta name="description" content="NOX. Moda para expresarte a tu manera. Descubre nuestro concepto de prendas, calzado y accesorios.">
-  <title>NOX — Wear Your Way</title>
-  <link rel="preconnect" href="https://images.unsplash.com">
-  <link rel="stylesheet" href="style.css">
-  <script src="store-core.js" defer></script>
-  <script src="catalog.js" defer></script>
-  <script src="scrip.js" defer></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#171717">
+<meta name="description" content="NOX — seis diseños de playeras. Encuentra tu estilo.">
+<title>NOX — Six drops. One attitude.</title>
+<link rel="stylesheet" href="/style.css">
+<script src="/scrip.js" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#main">Saltar al contenido</a>
-  <div class="announcement" role="note">NOX / FASHION PREVIEW &nbsp; — &nbsp; PRODUCTOS Y PRECIOS ILUSTRATIVOS · COMPRAS NO DISPONIBLES</div>
-  <header class="site-header">
-    <div class="shell header-main">
-      <a class="wordmark" href="#inicio" aria-label="NOX — Inicio">NOX<span class="wordmark-mark">✳</span></a>
-      <nav id="mainNav" class="site-nav" aria-label="Navegación principal">
-        <a href="#novedades">Novedades</a>
-        <a href="#coleccion" data-go-audience="mujer">Mujer</a>
-        <a href="#coleccion" data-go-audience="hombre">Hombre</a>
-        <a href="#coleccion" data-go-audience="all">Unisex</a>
-        <a href="#coleccion" data-go-category="accesorios">Accesorios</a>
-      </nav>
-      <div class="header-actions">
-        <button id="favoritesToggle" type="button" class="header-icon" aria-label="Mostrar favoritos" aria-pressed="false"><span aria-hidden="true">♡</span><span class="favorites-number" id="favoritesCount">0</span></button>
-        <button id="cartToggle" type="button" class="header-icon cart-trigger" aria-label="Abrir carrito" aria-controls="cartPanel" aria-expanded="false"><span aria-hidden="true">▱</span><span id="cartCount" class="cart-number">0</span></button>
-        <button id="menuButton" type="button" class="menu-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="mainNav"><span></span><span></span></button>
+<a class="skip-link" href="#main">Ir al contenido</a>
+<div class="announcement" role="status">NOX / LA PRIMERA COLECCIÓN — PAGOS DISPONIBLES AL CONFIRMAR PRECIOS Y LANZAMIENTO</div>
+<header class="topbar">
+  <div class="shell nav-layout">
+    <a href="/" class="logo" aria-label="NOX inicio">NOX<span>✳</span></a>
+    <nav aria-label="Principal" class="nav-links">
+      <a href="#coleccion">La colección</a><a href="#concepto">Concepto</a><a href="#informacion">Información</a>
+    </nav>
+    <button type="button" id="openCart" class="bag-button" aria-expanded="false" aria-controls="cartPanel">
+      <span>Mi bolsa</span> <span class="bag-count" id="bagCount">0</span>
+    </button>
+  </div>
+</header>
+<main id="main">
+  <section class="hero" aria-labelledby="heroTitle">
+    <div class="shell hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">THE FIRST DROP / 001</p>
+        <h1 id="heroTitle">SIX DESIGNS.<br><em>ONE ATTITUDE.</em></h1>
+        <p>Seis playeras. Seis formas de expresarte. La primera colección NOX es un punto de partida para crear tu propia historia.</p>
+        <a class="button light-button" href="#coleccion">Descubrir los diseños <span aria-hidden="true">↗</span></a>
+        <div class="hero-index"><span>NOX / EDITION 001</span><span>EST. 2026</span></div>
       </div>
-    </div>
-  </header>
-
-  <main id="main">
-    <section class="fashion-hero" id="inicio" aria-labelledby="heroHeading">
-      <div class="hero-image" role="img" aria-label="Fotografía editorial de moda ilustrativa"></div>
-      <div class="hero-shade"></div>
-      <div class="shell hero-content">
-        <p class="hero-kicker">NOX STUDIO <span class="kicker-line"></span> DROP 001 / DEMO</p>
-        <h1 id="heroHeading">Wear your<br><em>own story.</em></h1>
-        <p>Sin reglas. Sin etiquetas. Solo piezas que hablan por ti.</p>
-        <a class="button button-cream" href="#coleccion">Descubrir la colección <span aria-hidden="true">↗</span></a>
-      </div>
-      <div class="shell hero-footer"><span>NOX / EDITION 01</span><span>SCROLL TO DISCOVER ↓</span></div>
-    </section>
-
-    <section class="manifesto shell" aria-label="Manifiesto NOX">
-      <p class="eyebrow">THIS IS NOX — 001</p>
-      <div class="manifesto-layout">
-        <h2>Tu estilo.<br><em>Tus reglas.</em></h2>
-        <p>Moda que se siente tuya. Diseñamos esta experiencia para explorar siluetas esenciales, combinaciones versátiles y accesorios que hacen la diferencia.</p>
-      </div>
-    </section>
-
-    <section class="edit-section shell" id="novedades" aria-labelledby="editTitle">
-      <div class="section-title-row"><div><p class="eyebrow">THE NOX EDIT</p><h2 id="editTitle">Explora tu estilo<span class="accent-period">.</span></h2></div><span class="tiny-meta">CURATED / DEMO</span></div>
-      <div class="edit-grid">
-        <a class="edit-tile edit-women" href="#coleccion" data-go-audience="mujer"><span class="edit-info"><span>01 / EDIT</span><strong>Mujer</strong><span class="edit-arrow">Explorar ↗</span></span></a>
-        <a class="edit-tile edit-men" href="#coleccion" data-go-audience="hombre"><span class="edit-info"><span>02 / EDIT</span><strong>Hombre</strong><span class="edit-arrow">Explorar ↗</span></span></a>
-        <a class="edit-tile edit-details" href="#coleccion" data-go-category="accesorios"><span class="edit-info"><span>03 / EDIT</span><strong>Accesorios</strong><span class="edit-arrow">Explorar ↗</span></span></a>
-      </div>
-    </section>
-
-    <section class="shop-section shell" id="coleccion" aria-labelledby="collectionTitle">
-      <div class="section-title-row"><div><p class="eyebrow">THE COLLECTION / 001</p><h2 id="collectionTitle">Selección NOX<span class="accent-period">.</span></h2></div><span class="tiny-meta">ESTILO SIN LÍMITES</span></div>
-      <div class="shop-controls">
-        <label class="search-field"><span aria-hidden="true">⌕</span><span class="sr-only">Buscar productos</span><input type="search" id="searchInput" placeholder="Buscar prendas, calzado, accesorios…" autocomplete="off"></label>
-        <label class="sort-field"><span class="sr-only">Ordenar productos</span><select id="sortSelect"><option value="featured">Destacados</option><option value="price-asc">Precio: menor primero</option><option value="price-desc">Precio: mayor primero</option><option value="name">Nombre A–Z</option></select></label>
-      </div>
-      <div class="filters-area">
-        <div id="categoryFilters" class="filter-chips" role="group" aria-label="Categoría">
-          <button class="filter-chip is-active" type="button" data-category="all" aria-pressed="true">Todo</button>
-          <button class="filter-chip" type="button" data-category="ropa" aria-pressed="false">Ropa</button>
-          <button class="filter-chip" type="button" data-category="calzado" aria-pressed="false">Calzado</button>
-          <button class="filter-chip" type="button" data-category="accesorios" aria-pressed="false">Accesorios</button>
+      <div class="hero-art">
+        <div class="hero-art-inner">
+          <img class="hero-shirt hero-shirt-back" src="/assets/nox-02.svg" alt="Concepto visual de la playera NOX STATIC">
+          <img class="hero-shirt hero-shirt-front" src="/assets/nox-01.svg" alt="Concepto visual de la playera NOX ECLIPSE">
+          <span class="art-caption">DESIGN STUDIES / ORIGINAL CONCEPTS</span>
         </div>
-        <div class="audience-wrapper"><label for="audienceFilter">Explorar</label><select id="audienceFilter"><option value="all">Todos los estilos</option><option value="mujer">Mujer + unisex</option><option value="hombre">Hombre + unisex</option><option value="unisex">Unisex</option></select></div>
-      </div>
-      <div class="product-count-row"><span id="resultsCount" aria-live="polite"></span><button id="resetFilters" type="button">Limpiar filtros</button></div>
-      <div id="productsGrid" class="product-grid" aria-live="polite"></div>
-    </section>
-
-    <section class="statement" id="filosofia" aria-labelledby="statementHeading">
-      <div class="shell statement-inner">
-        <p class="eyebrow">NOX / THE IDEA</p>
-        <h2 id="statementHeading">NOT JUST CLOTHES.<br><em>A WAY TO BE.</em></h2>
-        <p>No se trata de seguir tendencias, sino de encontrar piezas que te representen.</p>
-        <a class="button button-outline" href="#coleccion">Explora NOX <span aria-hidden="true">↗</span></a>
-      </div>
-    </section>
-
-    <section class="values-section shell" aria-label="Valores de la experiencia NOX">
-      <div><span>01 / EXPLORE</span><strong>Estilo personal</strong><p>Una selección para construir tus propios looks.</p></div>
-      <div><span>02 / DISCOVER</span><strong>Detalles que importan</strong><p>Prendas y accesorios en una experiencia simple.</p></div>
-      <div><span>03 / COMBINE</span><strong>Tu próxima idea</strong><p>Descubre combinaciones, tallas y tonos.</p></div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="shell footer-top"><div><a class="footer-wordmark" href="#inicio">NOX<span>✳</span></a><p>WEAR YOUR OWN STORY.</p></div><p>Moda. Identidad.<br>Una forma de expresarte.</p></div>
-    <div class="shell footer-bottom"><span>© NOX 2026 · PROTOTIPO</span><span>Catálogo ilustrativo · No acepta pedidos ni pagos</span><a href="#inicio">Volver arriba ↑</a></div>
-  </footer>
-
-  <div id="backdrop" class="backdrop" hidden></div>
-  <aside id="cartPanel" class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cartTitle" aria-hidden="true" tabindex="-1">
-    <div class="cart-head"><div><p class="eyebrow">YOUR SELECTION</p><h2 id="cartTitle">Tu bolsa <span id="cartHeadingCount">(0)</span></h2></div><button id="closeCart" class="icon-close" type="button" aria-label="Cerrar carrito">×</button></div>
-    <div id="cartItems" class="cart-items"></div>
-    <div class="cart-bottom">
-      <div class="cart-total"><span>Subtotal ilustrativo</span><strong id="cartTotal">$0</strong></div>
-      <p>Precios de ejemplo en MXN; no incluyen costos reales de envío ni impuestos aplicables.</p>
-      <button id="checkoutBtn" class="button checkout-btn" type="button" disabled>Compra en línea próximamente</button>
-      <p class="checkout-note">NOX todavía no recibe pedidos ni pagos.</p>
-    </div>
-  </aside>
-
-  <section id="productPanel" class="product-panel" role="dialog" aria-modal="true" aria-labelledby="detailTitle" aria-hidden="true" tabindex="-1">
-    <button id="closeProduct" class="icon-close product-close" type="button" aria-label="Cerrar producto">×</button>
-    <div class="product-panel-grid">
-      <div class="detail-image"><img id="detailImage" alt="Imagen ilustrativa de la prenda"></div>
-      <div class="detail-info">
-        <p id="detailCategory" class="eyebrow"></p>
-        <h2 id="detailTitle"></h2>
-        <p id="detailPrice" class="detail-price"></p>
-        <p id="detailDescription" class="detail-description"></p>
-        <fieldset class="selector" id="colorSelector"><legend>Color <strong id="selectedColor"></strong></legend><div id="colorOptions" class="color-options"></div></fieldset>
-        <fieldset class="selector" id="sizeSelector"><legend>Talla <strong id="selectedSize"></strong></legend><div id="sizeOptions" class="size-options"></div></fieldset>
-        <button id="sizeGuideButton" class="size-guide-button" type="button" aria-expanded="false" aria-controls="sizeGuide">Guía orientativa de tallas <span aria-hidden="true">↗</span></button>
-        <div id="sizeGuide" class="size-guide" hidden><p>Las tallas aquí son ilustrativas. En NOX publicaremos medidas reales por producto antes de vender. En calzado, los números mostrados son referencias MX.</p></div>
-        <p id="selectionError" class="selection-error" role="status" hidden></p>
-        <button id="addSelectedToCart" class="button detail-add" type="button">Agregar a mi bolsa <span aria-hidden="true">↗</span></button>
-        <p class="detail-footnote">Vista de demostración · Sin existencias ni disponibilidad confirmadas</p>
       </div>
     </div>
   </section>
-  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <section class="intro shell" id="concepto">
+    <p class="eyebrow">NOX MANIFESTO</p>
+    <div class="intro-row"><h2>No sigas el estilo.<br><em>Hazlo tuyo.</em></h2>
+    <p>Sin colecciones infinitas. Solo seis propuestas con identidad propia. Elige el diseño y la talla que mejor van contigo.</p></div>
+  </section>
+  <section class="collection shell" id="coleccion" aria-labelledby="collectionTitle">
+    <div class="heading-row"><div><p class="eyebrow">DROP 001 / SIX DESIGNS</p><h2 id="collectionTitle">La colección<span>.</span></h2></div><span class="edition">EDICIÓN 001 / 2026</span></div>
+    <div class="stock-note"><span class="stock-icon" aria-hidden="true">◉</span>
+      <div><strong>Una edición limitada de 30 piezas</strong><p>Por cada diseño: 3 playeras talla M y 2 talla L. Las existencias se actualizan al consultar el inventario.</p></div>
+    </div>
+    <div class="catalog-controls"><label class="search-field"><span aria-hidden="true">⌕</span><span class="sr-only">Buscar diseño</span>
+      <input id="search" type="search" placeholder="Encuentra tu diseño…"></label>
+      <button id="refresh" class="refresh" type="button">Actualizar disponibilidad ↻</button>
+    </div>
+    <div id="statusMessage" class="status-message" aria-live="polite">Consultando catálogo e inventario…</div>
+    <div class="product-grid" id="productGrid" aria-live="polite"></div>
+  </section>
+  <section class="about" id="informacion">
+    <div class="shell about-row"><div><p class="eyebrow">A DIFFERENT WAY TO DRESS</p>
+      <h2>WEAR WHAT<br><em>YOU FEEL.</em></h2></div>
+      <div><p>En NOX cada diseño cuenta una historia. Preparamos la primera colección de playeras con una selección pequeña y controlada.</p>
+      <p class="disclaimer">Los gráficos mostrados son conceptos visuales originales. Los diseños y fotografías comerciales definitivos se confirmarán antes del lanzamiento.</p>
+      <a href="#coleccion" class="outline-link">Regresar al catálogo ↗</a></div></div>
+  </section>
+  <section class="details shell" aria-label="Información comercial">
+    <div><span>01 / INVENTARIO</span><h3>Unidades limitadas</h3><p>El servidor comprueba la talla elegida antes de iniciar el pago.</p></div>
+    <div><span>02 / PAGO</span><h3>Stripe Checkout</h3><p>Los pagos se procesarán de forma segura en la página de Stripe.</p></div>
+    <div><span>03 / DISPONIBILIDAD</span><h3>Existencias actualizadas</h3><p>Las piezas quedan reservadas temporalmente mientras se completa el pago.</p></div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="shell"><div class="footer-head"><a href="/" class="footer-logo">NOX<span>✳</span></a><p>WEAR YOUR OWN STORY.</p></div>
+  <div class="footer-bottom"><span>© NOX 2026</span><span>Tienda en preparación · Datos comerciales sujetos a confirmación</span><a href="#main">Volver arriba ↑</a></div></div>
+</footer>
+<div id="overlay" class="overlay" hidden></div>
+<aside id="cartPanel" class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cartTitle" aria-hidden="true" tabindex="-1">
+  <header class="cart-head"><div><p class="eyebrow">YOUR SELECTION</p><h2 id="cartTitle">Tu bolsa <span id="cartLabelCount">(0)</span></h2></div>
+    <button id="closeCart" type="button" class="close-icon" aria-label="Cerrar bolsa">×</button></header>
+  <div class="cart-content" id="cartItems"></div>
+  <div class="cart-bottom"><div class="subtotal"><span>Subtotal</span><strong id="subtotal">Por confirmar</strong></div>
+    <p id="shippingNote">Envío y cargos aplicables se confirman antes de pagar.</p>
+    <button id="checkout" class="button checkout-button" type="button" disabled>Comprar con Stripe ↗</button>
+    <p id="checkoutStatus" class="checkout-status" role="status">La compra estará disponible cuando se confirmen los precios.</p>
+  </div>
+</aside>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </body>
 </html>

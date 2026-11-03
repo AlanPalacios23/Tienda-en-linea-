@@ -4,22 +4,45 @@ on:
     branches: [main, "feat/nox-*"]
   pull_request:
 jobs:
-  frontend:
+  test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: nox
+          POSTGRES_PASSWORD: test_only_password
+          POSTGRES_DB: nox
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U nox -d nox"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://nox:test_only_password@localhost:5432/nox
+      PUBLIC_BASE_URL: http://localhost:8080
+      CHECKOUT_ENABLED: false
+      NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Validar sintaxis JavaScript
+      - name: Instalar dependencias del API
+        run: npm --prefix server install --no-audit --no-fund
+      - name: Validar sintaxis
         run: |
-          node --check store-core.js
-          node --check catalog.js
           node --check scrip.js
-      - name: Pruebas de catálogo y carrito
+          node --check success.js
+          node --check server/index.js
+          node --check server/inventory.js
+          node --check server/config.js
+          node --check server/reconcile.js
+      - name: Migrar y verificar inventario inicial
+        run: npm --prefix server run migrate
+      - name: Pruebas de UI y contrato
         run: node --test tests/*.test.cjs
-      - name: Verificar archivos requeridos
-        run: |
-          test -s index.html
-          test -s style.css
-          grep -q 'NOX' index.html
+      - name: Pruebas de Stripe y stock concurrente en PostgreSQL
+        run: npm --prefix server test

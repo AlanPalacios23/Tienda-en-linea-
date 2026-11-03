@@ -1,326 +1,223 @@
-/* NOX Fashion v0.2 — frontend de demostración; sin checkout real. */
-(function () {
-  "use strict";
-  const products = window.NoxCatalog;
-  const core = window.NoxStore;
-  const CART_KEY = "nox_fashion_demo_cart_v2";
-  const FAV_KEY = "nox_fashion_demo_favorites_v2";
-  const fmt = new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN",maximumFractionDigits:0});
-  const $ = id => document.getElementById(id);
-  const ui = {
-    grid:$("productsGrid"), search:$("searchInput"),sort:$("sortSelect"),
-    categories:$("categoryFilters"),audience:$("audienceFilter"),
-    results:$("resultsCount"),reset:$("resetFilters"),
-    favoriteToggle:$("favoritesToggle"),favoriteCount:$("favoritesCount"),
-    cartToggle:$("cartToggle"),cartPanel:$("cartPanel"),cartCount:$("cartCount"),
-    cartHeadingCount:$("cartHeadingCount"),cartTotal:$("cartTotal"),cartItems:$("cartItems"),
-    backdrop:$("backdrop"),closeCart:$("closeCart"),checkout:$("checkoutBtn"),
-    menu:$("menuButton"),nav:$("mainNav"),toast:$("toast"),
-    productPanel:$("productPanel"),closeProduct:$("closeProduct"),detailImage:$("detailImage"),
-    detailCategory:$("detailCategory"),detailTitle:$("detailTitle"),
-    detailPrice:$("detailPrice"),detailDescription:$("detailDescription"),
-    colorOptions:$("colorOptions"),sizeOptions:$("sizeOptions"),
-    selectedColor:$("selectedColor"),selectedSize:$("selectedSize"),
-    sizeGuideButton:$("sizeGuideButton"),sizeGuide:$("sizeGuide"),
-    selectionError:$("selectionError"),addSelected:$("addSelectedToCart")
-  };
-  let cart = {};
-  let favorites = [];
-  let category = "all";
-  let audience = "all";
-  let onlyFavorites = false;
-  let currentProduct = null;
-  let currentSize = null;
-  let currentColor = null;
-  let activePanel = null;
-  let returnFocus = null;
-  let toastTimeout = 0;
-
-  function escape(value) {
-    return String(value == null ? "" : value).replace(/[&<>"']/g,
-      char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+"use strict";
+(() => {
+ const el=id=>document.getElementById(id);
+ const ui={
+  products:el("productGrid"),status:el("statusMessage"),search:el("search"),refresh:el("refresh"),
+  openCart:el("openCart"),closeCart:el("closeCart"),panel:el("cartPanel"),overlay:el("overlay"),
+  cartItems:el("cartItems"),bagCount:el("bagCount"),cartLabelCount:el("cartLabelCount"),
+  subtotal:el("subtotal"),checkout:el("checkout"),checkoutStatus:el("checkoutStatus"),
+  toast:el("toast")
+ };
+ const money=new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN"});
+ const KEY="nox_live_cart_v1";
+ let catalog=[];
+ let cart={};
+ let checkoutAvailable=false;
+ let checkoutRequestId=null;
+ let lastFocus=null;
+ let timer=null;
+ const safe=v=>String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+ function notify(message){
+  clearTimeout(timer);
+  ui.toast.textContent=message;
+  ui.toast.hidden=false;
+  timer=setTimeout(()=>ui.toast.hidden=true,3600);
+ }
+ function persist(){
+  try{localStorage.setItem(KEY,JSON.stringify(cart));}catch(_){}
+ }
+ function loadCart(){
+  try{
+   const value=JSON.parse(localStorage.getItem(KEY)||"{}");
+   if(value && !Array.isArray(value) && typeof value==="object")return value;
+  }catch(_){}
+  return {};
+ }
+ function variants(){
+  return catalog.flatMap(p=>p.variants.map(v=>({...v,product:p})));
+ }
+ function pruneCart(){
+  const allowed=new Map(variants().map(v=>[v.sku,v]));
+  const updated={};
+  for(const [sku,qty] of Object.entries(cart)){
+   const v=allowed.get(sku);
+   if(v && Number.isSafeInteger(qty) && qty>0 && v.available>0)
+    updated[sku]=Math.min(qty,v.available,5);
   }
-  function label(categoryName) {
-    return {ropa:"Ropa",calzado:"Calzado",accesorios:"Accesorios"}[categoryName] || categoryName;
-  }
-  function store(key,value) {
-    try {localStorage.setItem(key,JSON.stringify(value));} catch (_) {
-      /* Modo privado: el carrito permanece en memoria. */
-    }
-  }
-  function read(key) {
-    try {return localStorage.getItem(key);}catch (_) {return null;}
-  }
-  function setToast(message) {
-    clearTimeout(toastTimeout);
-    ui.toast.textContent = message;
-    ui.toast.hidden = false;
-    toastTimeout = setTimeout(() => {ui.toast.hidden = true;},3200);
-  }
-  function syncFilters() {
-    ui.categories.querySelectorAll("[data-category]").forEach(button => {
-      const selected = button.dataset.category === category;
-      button.classList.toggle("is-active",selected);
-      button.setAttribute("aria-pressed",String(selected));
-    });
-    ui.audience.value = audience;
-    ui.favoriteToggle.setAttribute("aria-pressed",String(onlyFavorites));
-    ui.favoriteToggle.classList.toggle("is-active",onlyFavorites);
-    ui.favoriteCount.textContent = favorites.length;
-  }
-  function renderProducts() {
-    const results = core.filterProducts(products,{
-      query:ui.search.value,sort:ui.sort.value,category,audience
-    }).filter(p => !onlyFavorites || favorites.includes(p.id));
-    ui.results.textContent = results.length + (results.length===1?" producto":" productos");
-    syncFilters();
-    if (!results.length) {
-      ui.grid.innerHTML = '<div class="empty-results"><span aria-hidden="true">✳</span>'+
-        '<h3>No encontramos piezas con esos filtros.</h3>'+
-        '<p>Explora otras categorías o vuelve a la colección completa.</p>'+
-        '<button type="button" id="emptyReset" class="button button-dark">Ver colección completa ↗</button></div>';
-      return;
-    }
-    ui.grid.innerHTML = results.map((p,index) =>
-      '<article class="product-card">'+
-        '<div class="product-media">'+
-          '<button class="view-media" type="button" data-view="'+escape(p.id)+'" aria-label="Ver detalles de '+escape(p.name)+'">'+
-            '<img src="'+escape(p.image)+'" alt="Foto ilustrativa: '+escape(p.name)+'" loading="lazy">'+
-          '</button>'+
-          (p.tag ? '<span class="product-tag">'+escape(p.tag)+'</span>' : '')+
-          '<button class="favorite-button '+(favorites.includes(p.id)?"is-favorite":"")+'" type="button" data-favorite="'+escape(p.id)+'" aria-pressed="'+favorites.includes(p.id)+'" aria-label="'+(favorites.includes(p.id)?"Quitar "+escape(p.name)+" de favoritos":"Guardar "+escape(p.name)+" en favoritos")+'">'+(favorites.includes(p.id)?"♥":"♡")+'</button>'+
-        '</div>'+
-        '<div class="product-card-info"><div class="product-caption"><span>'+escape(label(p.category))+' / '+escape(p.audience)+'</span><span>'+String(index+1).padStart(2,"0")+'</span></div>'+
-          '<button class="product-name" data-view="'+escape(p.id)+'" type="button">'+escape(p.name)+'</button>'+
-          '<div class="product-card-foot"><strong>'+escape(fmt.format(p.price))+'</strong>'+
-            '<button class="quick-add" data-view="'+escape(p.id)+'" type="button" aria-label="Elegir talla y color de '+escape(p.name)+'">Elegir opciones <span aria-hidden="true">↗</span></button>'+
-          '</div>'+
-        '</div></article>'
-    ).join("");
-  }
-  function renderCart() {
-    const s=core.summary(cart,products);
-    ui.cartCount.textContent=s.count;
-    ui.cartHeadingCount.textContent="("+s.count+")";
-    ui.cartTotal.textContent=fmt.format(s.subtotal);
-    ui.checkout.disabled=true; // Seguridad comercial: nada de pagos falsos.
-    if (!s.rows.length) {
-      ui.cartItems.innerHTML='<div class="empty-cart"><span aria-hidden="true">◇</span>'+
-        '<h3>Tu bolsa está vacía</h3><p>Explora la colección y encuentra tu próxima pieza favorita.</p>'+
-        '<button id="continueShopping" class="button button-dark" type="button">Explorar colección ↗</button></div>';
-    } else {
-      ui.cartItems.innerHTML=s.rows.map(row =>
-        '<article class="cart-item">'+
-          '<div class="cart-item-image"><img src="'+escape(row.product.image)+'" alt=""></div>'+
-          '<div class="cart-item-content"><p class="cart-item-category">'+escape(label(row.product.category))+'</p>'+
-            '<h3>'+escape(row.product.name)+'</h3>'+
-            '<p class="cart-item-variant">Talla: '+escape(row.size.label)+' · '+escape(row.color.label)+'</p>'+
-            '<strong class="cart-item-price">'+escape(fmt.format(row.product.price))+'</strong>'+
-            '<div class="qty-controls">'+
-              '<button type="button" data-quantity="'+escape(row.key)+'" data-delta="-1" aria-label="Quitar una unidad de '+escape(row.product.name)+'">−</button>'+
-              '<span aria-label="Cantidad">'+row.quantity+'</span>'+
-              '<button type="button" data-quantity="'+escape(row.key)+'" data-delta="1" '+(row.quantity>=core.MAX_QTY?"disabled":"")+' aria-label="Añadir otra unidad de '+escape(row.product.name)+'">+</button>'+
-              '<button class="remove-item" type="button" data-remove="'+escape(row.key)+'">Eliminar</button>'+
-            '</div>'+
-          '</div></article>'
-      ).join("");
-    }
-    store(CART_KEY,cart);
-  }
-  function toggleFavorite(id) {
-    favorites=core.toggleFavorite(favorites,id,products);
-    store(FAV_KEY,favorites);
-    renderProducts();
-    setToast(favorites.includes(id)?"Agregado a favoritos":"Quitado de favoritos");
-  }
-  function setCategory(value) {
-    category=["all","ropa","calzado","accesorios"].includes(value)?value:"all";
-    renderProducts();
-  }
-  function setAudience(value) {
-    audience=["all","mujer","hombre","unisex"].includes(value)?value:"all";
-    renderProducts();
-  }
-  function resetFilters() {
-    category="all";audience="all";onlyFavorites=false;
-    ui.search.value="";ui.sort.value="featured";
-    renderProducts();
-  }
-  function closeMenu() {
-    ui.nav.classList.remove("is-open");
-    ui.menu.setAttribute("aria-expanded","false");
-  }
-  function openPanel(panel,focusElement) {
-    if (activePanel) closePanel(false);
-    closeMenu();
-    returnFocus=document.activeElement;
-    activePanel=panel;
-    panel.inert=false;
-    panel.classList.add("is-open");
-    panel.setAttribute("aria-hidden","false");
-    ui.backdrop.hidden=false;
-    document.body.classList.add("no-scroll");
-    ui.cartToggle.setAttribute("aria-expanded",String(panel===ui.cartPanel));
-    (focusElement || panel).focus();
-  }
-  function closePanel(restoreFocus=true) {
-    if (!activePanel) return;
-    activePanel.classList.remove("is-open");
-    activePanel.setAttribute("aria-hidden","true");
-    activePanel.inert=true;
-    activePanel=null;
-    ui.backdrop.hidden=true;
-    document.body.classList.remove("no-scroll");
-    ui.cartToggle.setAttribute("aria-expanded","false");
-    if (restoreFocus && returnFocus && typeof returnFocus.focus==="function") returnFocus.focus();
-  }
-  function trapDialogFocus(event) {
-    if (event.key!=="Tab" || !activePanel) return;
-    const els=Array.from(activePanel.querySelectorAll(
-      'a[href],button:not([disabled]):not([hidden]),input:not([disabled]),select:not([disabled]),[tabindex="0"]'
-    )).filter(el => !el.closest("[hidden]"));
-    if (!els.length) {event.preventDefault();activePanel.focus();return;}
-    const first=els[0],last=els[els.length-1];
-    if (event.shiftKey && document.activeElement===first) {event.preventDefault();last.focus();}
-    else if (!event.shiftKey && document.activeElement===last) {event.preventDefault();first.focus();}
-  }
-  function selectOptions() {
-    if (!currentProduct) return;
-    ui.selectedColor.textContent=currentProduct.colors.find(c=>c.id===currentColor)?.label || "";
-    ui.selectedSize.textContent=currentProduct.sizes.find(s=>s.id===currentSize)?.label || "— Selecciona";
-    ui.colorOptions.innerHTML=currentProduct.colors.map(color =>
-      '<button class="color-option '+(color.id===currentColor?"is-selected":"")+'" type="button" data-color="'+escape(color.id)+'" aria-label="Color '+escape(color.label)+'" aria-pressed="'+(color.id===currentColor)+'" title="'+escape(color.label)+'"><span style="--swatch:'+escape(color.hex)+'"></span></button>'
-    ).join("");
-    ui.sizeOptions.innerHTML=currentProduct.sizes.map(size =>
-      '<button class="size-option '+(size.id===currentSize?"is-selected":"")+'" type="button" data-size="'+escape(size.id)+'" aria-pressed="'+(size.id===currentSize)+'">'+escape(size.label)+'</button>'
-    ).join("");
-    ui.selectionError.hidden=true;
-  }
-  function showProduct(id) {
-    const product=products.find(p=>p.id===id);
-    if (!product) return;
-    currentProduct=product;
-    currentColor=product.colors[0].id;
-    currentSize=product.sizes.length===1?product.sizes[0].id:null;
-    ui.detailImage.src=product.image;
-    ui.detailImage.alt="Fotografía ilustrativa: "+product.name;
-    ui.detailImage.hidden=false;
-    ui.detailCategory.textContent=label(product.category)+" / "+product.audience.toUpperCase();
-    ui.detailTitle.textContent=product.name;
-    ui.detailPrice.textContent=fmt.format(product.price);
-    ui.detailDescription.textContent=product.description;
-    ui.sizeGuide.hidden=true;
-    ui.sizeGuideButton.setAttribute("aria-expanded","false");
-    selectOptions();
-    openPanel(ui.productPanel,ui.closeProduct);
-  }
-  function addSelection() {
-    if (!currentProduct) return;
-    if (!currentSize) {
-      ui.selectionError.textContent="Selecciona una talla para continuar.";
-      ui.selectionError.hidden=false;
-      ui.sizeOptions.querySelector("button")?.focus();
-      return;
-    }
-    const key=core.makeKey(currentProduct,currentSize,currentColor);
-    if (!key) {setToast("Selecciona una variante válida.");return;}
-    if ((cart[key]||0)>=core.MAX_QTY) {setToast("Máximo de 10 unidades por variante.");return;}
-    cart=core.changeQuantity(cart,key,1,products);
-    renderCart();
-    closePanel();
-    setToast("Agregado a tu bolsa");
-    openPanel(ui.cartPanel,ui.closeCart);
-  }
-  function navigateFromLink(link) {
-    if (link.dataset.goAudience) {
-      category="all";setAudience(link.dataset.goAudience);
-    } else if (link.dataset.goCategory) {
-      audience="all";setCategory(link.dataset.goCategory);
-    }
-    onlyFavorites=false;
-    renderProducts();
-    closeMenu();
-  }
-  ui.grid.addEventListener("click",event => {
-    const view=event.target.closest("[data-view]");
-    const fav=event.target.closest("[data-favorite]");
-    if (fav) toggleFavorite(fav.dataset.favorite);
-    else if (view) showProduct(view.dataset.view);
-    else if (event.target.closest("#emptyReset")) resetFilters();
-  });
-  ui.grid.addEventListener("error",event => {
-    if (event.target.tagName==="IMG") event.target.hidden=true;
-  },true);
-  ui.categories.addEventListener("click",event => {
-    const chip=event.target.closest("[data-category]");
-    if (chip) {onlyFavorites=false;setCategory(chip.dataset.category);}
-  });
-  ui.audience.addEventListener("change",event => {
-    onlyFavorites=false;setAudience(event.target.value);
-  });
-  ui.search.addEventListener("input",renderProducts);
-  ui.sort.addEventListener("change",renderProducts);
-  ui.reset.addEventListener("click",resetFilters);
-  ui.favoriteToggle.addEventListener("click",() => {
-    onlyFavorites=!onlyFavorites;renderProducts();
-    document.getElementById("coleccion").scrollIntoView({behavior:"smooth",block:"start"});
-  });
-  document.querySelectorAll("[data-go-audience],[data-go-category]").forEach(link => {
-    link.addEventListener("click",() => navigateFromLink(link));
-  });
-  ui.cartToggle.addEventListener("click",() => openPanel(ui.cartPanel,ui.closeCart));
-  ui.closeCart.addEventListener("click",() => closePanel());
-  ui.closeProduct.addEventListener("click",() => closePanel());
-  ui.backdrop.addEventListener("click",() => closePanel());
-  ui.cartItems.addEventListener("error",event => {
-    if (event.target.tagName==="IMG") event.target.hidden=true;
-  },true);
-  ui.detailImage.addEventListener("error",() => {ui.detailImage.hidden=true;});
-  ui.cartItems.addEventListener("click",event => {
-    const change=event.target.closest("[data-quantity]");
-    const remove=event.target.closest("[data-remove]");
-    if (change) {
-      cart=core.changeQuantity(cart,change.dataset.quantity,Number(change.dataset.delta),products);
-      renderCart();
-    } else if (remove) {
-      cart=core.changeQuantity(cart,remove.dataset.remove,-core.MAX_QTY,products);
-      renderCart();
-    } else if (event.target.closest("#continueShopping")) {
-      closePanel();
-      document.getElementById("coleccion").scrollIntoView({behavior:"smooth",block:"start"});
-    }
-  });
-  ui.colorOptions.addEventListener("click",event => {
-    const button=event.target.closest("[data-color]");
-    if (button) {currentColor=button.dataset.color;selectOptions();}
-  });
-  ui.sizeOptions.addEventListener("click",event => {
-    const button=event.target.closest("[data-size]");
-    if (button) {currentSize=button.dataset.size;selectOptions();}
-  });
-  ui.sizeGuideButton.addEventListener("click",() => {
-    const expanded=ui.sizeGuideButton.getAttribute("aria-expanded")==="true";
-    ui.sizeGuide.hidden=expanded;
-    ui.sizeGuideButton.setAttribute("aria-expanded",String(!expanded));
-  });
-  ui.addSelected.addEventListener("click",addSelection);
-  ui.menu.addEventListener("click",() => {
-    const open=ui.nav.classList.toggle("is-open");
-    ui.menu.setAttribute("aria-expanded",String(open));
-  });
-  ui.nav.querySelectorAll("a").forEach(link => {
-    link.addEventListener("click",closeMenu);
-  });
-  document.addEventListener("keydown",event => {
-    if (event.key==="Escape") {closePanel();closeMenu();}
-    trapDialogFocus(event);
-  });
-  window.addEventListener("resize",() => {if (window.innerWidth>780) closeMenu();});
-
-  ui.cartPanel.inert=true;
-  ui.productPanel.inert=true;
-  cart=core.loadCart(read(CART_KEY),products);
-  favorites=core.loadFavorites(read(FAV_KEY),products);
-  renderProducts();
+  cart=updated;
+  persist();
+ }
+ function getCartLines(){
+  const all=new Map(variants().map(v=>[v.sku,v]));
+  return Object.entries(cart).map(([sku,qty])=>({variant:all.get(sku),sku,qty}))
+   .filter(row=>row.variant && row.qty>0);
+ }
+ function escapeImgPath(path){
+  return /^\/assets\/nox-0[1-6]\.svg$/.test(path)?path:"";
+ }
+ function card(p){
+  const quantity=p.variants.reduce((sum,v)=>sum+v.available,0);
+  const price=p.price_cents===null?"Precio por confirmar":money.format(p.price_cents/100);
+  const buttons=p.variants.map(v=>{
+   const disabled=v.available<=0?"disabled":"";
+   return '<button type="button" class="size-choice" data-add="'+safe(v.sku)+'" '+disabled+
+     ' aria-label="Agregar '+safe(p.name)+', talla '+v.size+', '+v.available+' disponibles">'+
+     '<b>'+safe(v.size)+'</b><span>'+(v.available>0?v.available+" disponibles":"Agotada")+'</span></button>';
+  }).join("");
+  return '<article class="product-card"><div class="product-image">'+
+    '<img loading="lazy" src="'+escapeImgPath(p.image)+'" alt="Ilustración de la playera '+safe(p.name)+'">'+
+    '<span class="design-tag">DISEÑO '+safe(p.id.slice(-2))+'</span></div>'+
+    '<div class="product-body"><div class="product-topline"><span>NOX / DROP 001</span><span>'+
+    (quantity>0?quantity+" en existencia":"AGOTADO")+'</span></div>'+
+    '<h3>'+safe(p.name)+'</h3><p>'+safe(p.description)+'</p>'+
+    '<div class="price-row"><strong>'+safe(price)+'</strong><span>MXN</span></div>'+
+    '<div class="size-header"><strong>Selecciona una talla</strong><span>M · L</span></div>'+
+    '<div class="size-options">'+buttons+'</div></div></article>';
+ }
+ function renderProducts(){
+  const term=(ui.search.value||"").trim().toLocaleLowerCase("es-MX");
+  const filtered=catalog.filter(p=>(p.name+" "+p.description).toLocaleLowerCase("es-MX").includes(term));
+  ui.products.innerHTML=filtered.length?filtered.map(card).join(""):
+    '<div class="no-results">No encontramos diseños con esa búsqueda.</div>';
+ }
+ function renderCart(){
+  const lines=getCartLines();
+  const count=lines.reduce((n,r)=>n+r.qty,0);
+  const allPriced=lines.length>0 && lines.every(r=>Number.isSafeInteger(r.variant.product.price_cents));
+  ui.bagCount.textContent=count;
+  ui.cartLabelCount.textContent="("+count+")";
+  ui.subtotal.textContent=allPriced?
+    money.format(lines.reduce((n,r)=>n+r.qty*r.variant.product.price_cents,0)/100):"Por confirmar";
+  ui.cartItems.innerHTML=lines.length?lines.map(({variant,sku,qty})=>
+    '<article class="cart-item">'+
+    '<img src="'+escapeImgPath(variant.product.image)+'" alt="" loading="lazy">'+
+    '<div><h3>'+safe(variant.product.name)+'</h3>'+
+    '<p>Talla '+safe(variant.size)+'</p><strong>'+
+    (variant.product.price_cents===null?"Precio pendiente":money.format(variant.product.price_cents/100))+'</strong>'+
+    '<div class="quantity"><button type="button" data-change="'+safe(sku)+'" data-delta="-1" aria-label="Restar una">−</button>'+
+    '<span>'+qty+'</span><button type="button" data-change="'+safe(sku)+'" data-delta="1" '+
+    (qty>=variant.available?"disabled":"")+' aria-label="Agregar una">+</button>'+
+    '<button type="button" data-remove="'+safe(sku)+'" class="remove">Eliminar</button></div></div></article>'
+  ).join(""):'<div class="cart-empty"><span>◇</span><h3>Tu bolsa está vacía</h3><p>Explora nuestros seis diseños.</p><button type="button" id="continue" class="button dark-button">Explorar colección ↗</button></div>';
+  const ready=checkoutAvailable && allPriced && lines.length>0;
+  ui.checkout.disabled=!ready;
+  ui.checkoutStatus.textContent=ready?
+    "Stripe comprobará el pago. El pedido se confirmará cuando el servidor reciba su notificación.":
+    (checkoutAvailable?"Añade una playera para comprar.":"Los pagos aún no están habilitados; estamos finalizando la tienda.");
+  persist();
+ }
+ function updateQuantity(sku,delta){
+  const selected=variants().find(v=>v.sku===sku);
+  if(!selected)return;
+  const before=cart[sku]||0;
+  const next=Math.min(before+delta,selected.available,5);
+  if(next>0)cart[sku]=next;
+  else delete cart[sku];
+  checkoutRequestId=null;
   renderCart();
+ }
+ async function refresh(){
+  ui.status.textContent="Actualizando las existencias…";
+  try{
+   const response=await fetch("/api/catalog",{headers:{"Accept":"application/json"},cache:"no-store"});
+   if(!response.ok)throw new Error("catálogo no disponible");
+   const data=await response.json();
+   if(!Array.isArray(data.products)||data.products.length!==6)throw new Error("catálogo incompleto");
+   catalog=data.products;
+   checkoutAvailable=data.checkout_enabled===true;
+   pruneCart();
+   renderProducts();
+   renderCart();
+   ui.status.textContent=checkoutAvailable?
+     "Seis diseños. Selecciona talla M o L. Las existencias se verifican nuevamente al pagar.":
+     "Colección de seis diseños · Las compras se habilitarán cuando se confirmen precios, envíos y Stripe.";
+  } catch(_) {
+   checkoutAvailable=false;
+   catalog=[];
+   ui.products.innerHTML="";
+   ui.status.textContent="No pudimos consultar el inventario. Intenta actualizar la disponibilidad.";
+   renderCart();
+  }
+ }
+ function openCart(){
+  lastFocus=document.activeElement;
+  ui.panel.classList.add("is-open");
+  ui.panel.inert=false;
+  ui.panel.setAttribute("aria-hidden","false");
+  ui.overlay.hidden=false;
+  document.body.classList.add("no-scroll");
+  ui.openCart.setAttribute("aria-expanded","true");
+  ui.closeCart.focus();
+ }
+ function closeCart(){
+  if(!ui.panel.classList.contains("is-open"))return;
+  ui.panel.classList.remove("is-open");
+  ui.panel.setAttribute("aria-hidden","true");
+  ui.panel.inert=true;
+  ui.overlay.hidden=true;
+  document.body.classList.remove("no-scroll");
+  ui.openCart.setAttribute("aria-expanded","false");
+  if(lastFocus?.focus)lastFocus.focus();
+ }
+ function trap(event){
+  if(event.key!=="Tab" || !ui.panel.classList.contains("is-open"))return;
+  const items=[...ui.panel.querySelectorAll("button:not([disabled])")];
+  if(!items.length)return;
+  const first=items[0],last=items[items.length-1];
+  if(event.shiftKey && document.activeElement===first){event.preventDefault();last.focus();}
+  if(!event.shiftKey && document.activeElement===last){event.preventDefault();first.focus();}
+ }
+ async function checkout(){
+  if(ui.checkout.disabled)return;
+  ui.checkout.disabled=true;
+  ui.checkout.textContent="Conectando con Stripe…";
+  const items=getCartLines().map(row=>({sku:row.sku,quantity:row.qty}));
+  try{
+   if(!checkoutRequestId)checkoutRequestId=crypto.randomUUID();
+   const response=await fetch("/api/checkout",{
+    method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},
+    body:JSON.stringify({items,request_id:checkoutRequestId})
+   });
+   const data=await response.json();
+   if(!response.ok) {
+    if(response.status===409 && data.error!=="DUPLICATE_REQUEST")checkoutRequestId=null;
+    throw new Error(data.message||"No fue posible iniciar la compra");
+   }
+   if(typeof data.url!=="string" || !data.url.startsWith("https://checkout.stripe.com/"))
+    throw new Error("No recibimos un enlace seguro de Stripe");
+   window.location.assign(data.url);
+  }catch(err){
+   notify(err.message);
+   await refresh();
+  }finally{
+   ui.checkout.textContent="Comprar con Stripe ↗";
+   renderCart();
+  }
+ }
+ ui.products.addEventListener("click",event=>{
+  const button=event.target.closest("[data-add]");
+  if(!button)return;
+  updateQuantity(button.dataset.add,1);
+  notify("Playera agregada a tu bolsa");
+ });
+ ui.search.addEventListener("input",renderProducts);
+ ui.refresh.addEventListener("click",refresh);
+ ui.openCart.addEventListener("click",openCart);
+ ui.closeCart.addEventListener("click",closeCart);
+ ui.overlay.addEventListener("click",closeCart);
+ ui.cartItems.addEventListener("click",event=>{
+  const change=event.target.closest("[data-change]");
+  const remove=event.target.closest("[data-remove]");
+  if(change)updateQuantity(change.dataset.change,Number(change.dataset.delta));
+  else if(remove){delete cart[remove.dataset.remove];checkoutRequestId=null;renderCart();}
+  else if(event.target.closest("#continue")){closeCart();document.getElementById("coleccion").scrollIntoView({behavior:"smooth"});}
+ });
+ document.addEventListener("keydown",event=>{
+  if(event.key==="Escape")closeCart();
+  trap(event);
+ });
+ ui.checkout.addEventListener("click",checkout);
+ ui.panel.inert=true;
+ cart=loadCart();
+ refresh();
 })();
