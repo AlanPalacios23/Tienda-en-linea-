@@ -1,0 +1,12 @@
+# NOX: visual preview only. Backend remains private and is NOT deployed.
+[build]
+  command = "node scripts/build-netlify-preview.cjs"
+  publish = "dist-preview"
+  [build.environment]
+    NODE_VERSION = "22"
+
+[context.production]
+  command = "node scripts/build-netlify-preview.cjs"
+
+[context.deploy-preview]
+  command = "node scripts/build-netlify-preview.cjs"

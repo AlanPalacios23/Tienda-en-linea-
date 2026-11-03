@@ -1,185 +1,104 @@
-<!DOCTYPE html>
-<html lang="es">
+<!doctype html>
+<html lang="es-MX">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore - Tu tienda de tecnología</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#171717">
+<meta name="description" content="NOX — seis diseños de playeras. Encuentra tu estilo.">
+<title>NOX — Six drops. One attitude.</title>
+<link rel="stylesheet" href="/style.css">
+<script src="/scrip.js" defer></script>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="container">
-            <nav class="navbar">
-                <a href="#" class="logo">Tech<span>Store</span></a>
-                <ul class="nav-links" id="navLinks">
-                    <li><a href="#">Inicio</a></li>
-                    <li><a href="#products">Productos</a></li>
-                    <li><a href="#about">Nosotros</a></li>
-                    <li><a href="#contact">Contacto</a></li>
-                    <li class="cart-icon" id="cartIcon">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="cart-count">0</span>
-                    </li>
-                </ul>
-                <div class="hamburger" id="hamburger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </nav>
+<a class="skip-link" href="#main">Ir al contenido</a>
+<div class="announcement" role="status">NOX / LA PRIMERA COLECCIÓN — PAGOS DISPONIBLES AL CONFIRMAR PRECIOS Y LANZAMIENTO</div>
+<header class="topbar">
+  <div class="shell nav-layout">
+    <a href="/" class="logo" aria-label="NOX inicio">NOX<span>✳</span></a>
+    <nav aria-label="Principal" class="nav-links">
+      <a href="#coleccion">La colección</a><a href="#concepto">Concepto</a><a href="#informacion">Información</a>
+    </nav>
+    <button type="button" id="openCart" class="bag-button" aria-expanded="false" aria-controls="cartPanel">
+      <span>Mi bolsa</span> <span class="bag-count" id="bagCount">0</span>
+    </button>
+  </div>
+</header>
+<main id="main">
+  <section class="hero" aria-labelledby="heroTitle">
+    <div class="shell hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">THE FIRST DROP / 001</p>
+        <h1 id="heroTitle">SIX DESIGNS.<br><em>ONE ATTITUDE.</em></h1>
+        <p>Seis playeras. Seis formas de expresarte. La primera colección NOX reúne seis diseños oversize con una identidad propia.</p>
+        <a class="button light-button" href="#coleccion">Descubrir los diseños <span aria-hidden="true">↗</span></a>
+        <div class="hero-index"><span>NOX / EDITION 001</span><span>EST. 2026</span></div>
+      </div>
+      <div class="hero-art">
+        <div class="hero-art-inner">
+          <img class="hero-shirt hero-shirt-back" src="/assets/nox-02.svg" alt="Concepto visual de la playera NOX STATIC">
+          <img class="hero-shirt hero-shirt-front" src="/assets/nox-01.svg" alt="Concepto visual de la playera NOX ECLIPSE">
+          <span class="art-caption">DESIGN STUDIES / ORIGINAL CONCEPTS</span>
         </div>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <h1>Los Mejores Productos Tecnológicos</h1>
-            <p>Descubre nuestra amplia selección de dispositivos electrónicos, accesorios y gadgets al mejor precio del mercado.</p>
-            <a href="#products" class="btn">Explorar Productos</a>
-        </div>
-    </section>
-
-    <!-- Filtros -->
-    <section class="filters">
-        <div class="container filter-container">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Buscar productos...">
-                <i class="fas fa-search"></i>
-            </div>
-            <div class="category-filter">
-                <select id="categoryFilter">
-                    <option value="all">Todas las categorías</option>
-                    <option value="laptops">Laptops</option>
-                    <option value="smartphones">Smartphones</option>
-                    <option value="tablets">Tablets</option>
-                    <option value="consolas">Consolas</option>
-                    <option value="accesorios">Accesorios</option>
-                    <option value="componentes">Componentes</option>
-                </select>
-            </div>
-            <div class="price-filter">
-                <select id="priceFilter">
-                    <option value="all">Todos los precios</option>
-                    <option value="0-100">Hasta $100</option>
-                    <option value="100-500">$100 - $500</option>
-                    <option value="500-1000">$500 - $1000</option>
-                    <option value="1000-2000">$1000 - $2000</option>
-                    <option value="2000+">Más de $2000</option>
-                </select>
-            </div>
-        </div>
-    </section>
-
-    <!-- Productos -->
-    <section class="products-section" id="products">
-        <div class="container">
-            <h2 class="section-title">Nuestros Productos</h2>
-            <div class="products-grid" id="productsGrid">
-                <!-- Los productos se cargarán aquí con JavaScript -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Sección Nosotros -->
-    <section class="about-section" id="about">
-        <div class="container">
-            <div class="about-content">
-                <div class="about-text">
-                    <h2>Sobre TechStore</h2>
-                    <p>Somos una empresa líder en venta de productos tecnológicos, comprometida con ofrecer la mejor calidad y servicio a nuestros clientes. Con más de 10 años en el mercado, nos hemos consolidado como la tienda de confianza para los amantes de la tecnología.</p>
-                    <div class="features">
-                        <div class="feature">
-                            <i class="fas fa-shipping-fast"></i>
-                            <h3>Envío Gratis</h3>
-                            <p>En compras mayores a $500</p>
-                        </div>
-                        <div class="feature">
-                            <i class="fas fa-shield-alt"></i>
-                            <h3>Garantía Extendida</h3>
-                            <p>Hasta 2 años en todos los productos</p>
-                        </div>
-                        <div class="feature">
-                            <i class="fas fa-headset"></i>
-                            <h3>Soporte 24/7</h3>
-                            <p>Asistencia técnica especializada</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="about-image">
-                    <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Nuestra tienda">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Carrito de compras -->
-    <div class="overlay" id="overlay"></div>
-    <div class="cart-modal" id="cartModal">
-        <div class="cart-header">
-            <h2 class="cart-title">Tu Carrito</h2>
-            <button class="close-cart" id="closeCart">&times;</button>
-        </div>
-        <div class="cart-items" id="cartItems">
-            <!-- Los elementos del carrito se cargarán aquí -->
-        </div>
-        <div class="cart-total">
-            <span>Total:</span>
-            <span id="cartTotal">$0.00</span>
-        </div>
-        <button class="checkout-btn" id="checkoutBtn">Finalizar Compra</button>
+      </div>
     </div>
-
-    <!-- Footer -->
-    <footer id="contact">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-column">
-                    <h3>TechStore</h3>
-                    <p>Tu tienda de confianza para productos tecnológicos de última generación.</p>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
-                    </div>
-                </div>
-                <div class="footer-column">
-                    <h3>Enlaces Rápidos</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">Inicio</a></li>
-                        <li><a href="#products">Productos</a></li>
-                        <li><a href="#about">Nosotros</a></li>
-                        <li><a href="#contact">Contacto</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>Categorías</h3>
-                    <ul class="footer-links">
-                        <li><a href="#" data-category="laptops">Laptops</a></li>
-                        <li><a href="#" data-category="smartphones">Smartphones</a></li>
-                        <li><a href="#" data-category="tablets">Tablets</a></li>
-                        <li><a href="#" data-category="consolas">Consolas</a></li>
-                        <li><a href="#" data-category="accesorios">Accesorios</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>Contacto</h3>
-                    <ul class="footer-links">
-                        <li><i class="fas fa-map-marker-alt"></i> Av. Principal 123, Ciudad</li>
-                        <li><i class="fas fa-phone"></i> +1 234 567 890</li>
-                        <li><i class="fas fa-envelope"></i> info@techstore.com</li>
-                        <li><i class="fas fa-clock"></i> Lun-Vie: 9:00 - 18:00</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="copyright">
-                <p>&copy; 2023 TechStore. Todos los derechos reservados.</p>
-            </div>
-        </div>
-    </footer>
-
-    <script src="scrip.js"></script>
+  </section>
+  <section class="intro shell" id="concepto">
+    <p class="eyebrow">NOX MANIFESTO</p>
+    <div class="intro-row"><h2>No sigas el estilo.<br><em>Hazlo tuyo.</em></h2>
+    <p>Sin colecciones infinitas. Solo seis propuestas con identidad propia. Elige el diseño y la talla que mejor van contigo.</p></div>
+  </section>
+  <section class="collection shell" id="coleccion" aria-labelledby="collectionTitle">
+    <div class="heading-row"><div><p class="eyebrow">DROP 001 / SIX DESIGNS</p><h2 id="collectionTitle">La colección<span>.</span></h2></div><span class="edition">EDICIÓN 001 / 2026</span></div>
+    <div class="stock-note"><span class="stock-icon" aria-hidden="true">◉</span>
+      <div><strong>Una edición limitada de 30 piezas</strong><p>Por cada diseño: 3 playeras talla M y 2 talla L. Las existencias se actualizan al consultar el inventario.</p></div>
+    </div>
+    <div class="catalog-controls"><label class="search-field"><span aria-hidden="true">⌕</span><span class="sr-only">Buscar diseño</span>
+      <input id="search" type="search" placeholder="Encuentra tu diseño…"></label>
+      <button id="refresh" class="refresh" type="button">Actualizar disponibilidad ↻</button>
+    </div>
+    <div id="statusMessage" class="status-message" aria-live="polite">Consultando catálogo e inventario…</div>
+    <div class="product-grid" id="productGrid" aria-live="polite"></div>
+  </section>
+  <section class="about" id="informacion">
+    <div class="shell about-row"><div><p class="eyebrow">A DIFFERENT WAY TO DRESS</p>
+      <h2>WEAR WHAT<br><em>YOU FEEL.</em></h2></div>
+      <div><p>En NOX cada diseño cuenta una historia. Preparamos la primera colección de playeras con una selección pequeña y controlada.</p>
+      <p class="disclaimer">Los gráficos mostrados son conceptos visuales originales. Los diseños y fotografías comerciales definitivos se confirmarán antes del lanzamiento.</p>
+      <a href="#coleccion" class="outline-link">Regresar al catálogo ↗</a></div></div>
+  </section>
+  <section class="details shell" aria-label="Información comercial">
+    <div><span>01 / INVENTARIO</span><h3>Unidades limitadas</h3><p>El servidor comprueba la talla elegida antes de iniciar el pago.</p></div>
+    <div><span>02 / PAGO</span><h3>Pago seguro con Stripe</h3><p>Tarjetas y métodos disponibles según Stripe. Precio final visible antes de confirmar.</p></div>
+    <div><span>03 / DISPONIBILIDAD</span><h3>Envíos a todo México</h3><p>DHL Express nacional o entrega VIP en Tala, sujetos a disponibilidad operativa.</p></div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="shell"><div class="footer-head"><a href="/" class="footer-logo">NOX<span>✳</span></a><p>WEAR YOUR OWN STORY.</p></div>
+  <div class="footer-bottom"><span>© NOX 2026</span><span>Tienda en preparación · Datos comerciales sujetos a confirmación</span><a href="#main">Volver arriba ↑</a></div></div>
+</footer>
+<div id="overlay" class="overlay" hidden></div>
+<aside id="cartPanel" class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cartTitle" aria-hidden="true" tabindex="-1">
+  <header class="cart-head"><div><p class="eyebrow">YOUR SELECTION</p><h2 id="cartTitle">Tu bolsa <span id="cartLabelCount">(0)</span></h2></div>
+    <button id="closeCart" type="button" class="close-icon" aria-label="Cerrar bolsa">×</button></header>
+  <div class="cart-content" id="cartItems"></div>
+  <div class="cart-bottom">
+    <fieldset class="delivery-selector"><legend>¿Dónde entregamos?</legend>
+      <label class="delivery-option"><input type="radio" name="shippingZone" value="national" checked>
+        <span><strong>Resto de México · DHL Express</strong><small>$149 MXN · gratis en compras superiores a $1,399. Entrega estimada de 2–3 días hábiles tras despacho, según cobertura.</small></span></label>
+      <label class="delivery-option"><input type="radio" name="shippingZone" value="tala">
+        <span><strong>Tala, Jalisco · Entrega VIP</strong><small>$49 MXN · objetivo de entrega en menos de 90 minutos, sujeto a horario y confirmación.</small></span></label>
+      <label class="postal-label" for="shippingPostal">Código postal de entrega</label>
+      <input class="postal-input" id="shippingPostal" type="text" maxlength="5" inputmode="numeric" pattern="[0-9]{5}" autocomplete="postal-code" placeholder="Ej. 44100" required>
+      <p id="localPromoMessage" class="promo-info" hidden>Solo en Tala: introduce <strong>NOXTALA</strong> en Stripe Checkout y cada playera pasa de $499 a $399. La dirección debe coincidir con la ciudad de Tala.</p>
+    </fieldset>
+    <div class="subtotal"><span>Subtotal de prendas</span><strong id="subtotal">Por confirmar</strong></div>
+    <div class="subtotal small-subtotal"><span>Envío estimado</span><strong id="shippingTotal">$149</strong></div>
+    <div class="subtotal final-total"><span>Total antes de promociones</span><strong id="grandTotal">Por confirmar</strong></div>
+    <p id="shippingNote">El importe final aparece en Stripe antes de confirmar el pago. Solo se permite el código NOXTALA para entrega local.</p>
+    <button id="checkout" class="button checkout-button" type="button" disabled>Comprar con Stripe ↗</button>
+    <p id="checkoutStatus" class="checkout-status" role="status">La compra estará disponible cuando se confirmen los precios.</p>
+  </div>
+</aside>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </body>
 </html>

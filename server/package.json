@@ -1,0 +1,22 @@
+{
+  "name": "nox-store-api",
+  "version": "0.3.0",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "migrate": "node migrate.js",
+    "test": "node --test test/*.test.cjs",
+    "reconcile": "node reconcile.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "pg": "^8.16.3",
+    "stripe": "^23.0.0",
+    "helmet": "^8.1.0",
+    "express-rate-limit": "^8.1.0"
+  }
+}
