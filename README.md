@@ -1,42 +1,38 @@
-# NOX — tienda en línea (v0.1, demo)
+# NOX — Fashion Storefront v0.2 (demo)
 
-Primer paso para transformar el antiguo prototipo **TechStore** en **NOX**, una tienda digital con enfoque inicial en tecnología y accesorios.
+NOX es una futura tienda en línea de **ropa, moda, calzado y accesorios**, con identidad editorial premium, diseño responsive y selección de prendas por talla y color.
 
-## Estado
+## Estado real
+**Prototipo frontend; no es una tienda lista para vender.** El catálogo de 12 artículos, las fotos de referencia, las variantes, los precios en pesos mexicanos y las tallas son de demostración. No son ofertas, no son referencias de inventario ni confirman disponibilidad. No hay backend, cuentas, panel de gestión, órdenes, envíos, devoluciones o cobros. El botón de checkout está deshabilitado de forma intencional.
 
-**Demostración de frontend solamente.** NOX todavía no tiene backend, inventario real, usuarios, órdenes, cobros, envío, garantías ni panel de administración. **Ningún pedido ni pago puede realizarse** desde esta versión. Los artículos, fotos y precios en pesos mexicanos son exclusivamente ilustrativos y no constituyen ofertas comerciales.
+## Incluye
+- Home/editorial de moda, navegación por categorías, audiencia (mujer/hombre/unisex), búsqueda y ordenamiento.
+- Catálogo demo con fichas visuales y vista rápida con talla, color y guía de tallas orientativa.
+- Carrito persistido por combinación **producto + talla + color**, con límites y subtotal derivado del catálogo.
+- Favoritos locales en el navegador, sin sincronización ni cuentas.
+- Estados vacíos, controles de teclado, controles visibles en móvil y compatibilidad con preferencia de movimiento reducido.
+- Pruebas unitarias del catálogo y núcleo puro de variantes/carrito/favoritos en GitHub Actions.
 
-## Qué funciona
+## Archivos
+- index.html: secciones y diálogos accesibles del storefront.
+- style.css: diseño editorial, móvil y escritorio.
+- catalog.js: catálogo ficticio (sustituir por fuente autorizada antes del lanzamiento).
+- store-core.js: selección, validación y cálculos puramente frontend.
+- scrip.js: interacciones y persistencia local.
+- tests/store-core.test.cjs: batería de pruebas.
+- .github/workflows/nox-checks.yml: CI Node 22.
 
-- Diseño responsive para móvil, tableta y escritorio; navegación con teclado, cierre con Escape y soporte para reducir movimiento.
-- Catálogo ilustrativo con búsqueda sin sensibilidad a acentos, categorías y orden por precio/nombre.
-- Carrito local con incremento, decremento y eliminación de artículos; contador y subtotal.
-- Persistencia opcional con localStorage, filtrado de IDs no reconocidos y límite de 20 unidades por producto.
-- Estado vacío y mensajes informativos; compra desactivada para evitar un falso checkout.
+Para ejecutar pruebas con Node 22: \`node --test tests/*.test.cjs\`. Para servir el frontend: \`python3 -m http.server 8080\`.
 
-## Estructura
+## Decisiones de seguridad
+- Se utiliza un namespace nuevo en localStorage (nox_fashion_demo_*_v2), por lo que no se importan artículos del antiguo catálogo tecnológico.
+- Nunca se persisten ni calculan precios desde el carrito. IDs, colores y tallas se cotejan con el catálogo.
+- El checkout permanece **desactivado** hasta tener pedidos y pasarela reales verificados desde el servidor.
+- No incorporar secretos, credenciales, precios administrativos ni operaciones sensibles en el frontend.
 
-- index.html: landing y estructura de la tienda.
-- style.css: identidad visual y breakpoints.
-- catalog.js: artículos demo, datos que deben sustituirse antes del lanzamiento.
-- store-core.js: lógica pura del carrito, filtros y resumen.
-- scrip.js: comportamiento de interfaz (se conserva el nombre del archivo anterior para minimizar cambios).
-- tests/store-core.test.cjs: pruebas de carrito y filtros.
-- .github/workflows/nox-checks.yml: comprobaciones en GitHub Actions.
-
-## Desarrollo local
-
-No requiere instalar dependencias: abre index.html en un navegador o levanta un servidor estático. Para las pruebas, con Node.js 22:
-
-    node --test tests/*.test.cjs
-    node --check scrip.js
-
-## Próximas fases sugeridas
-
-1. Confirmar giro comercial, catálogo real, precios, fotos autorizadas e identidad de marca.
-2. API y base de datos: productos, variantes, inventario, impuestos, descuentos.
-3. Cuentas, direcciones, pedidos, seguridad, administración y auditoría.
-4. Pasarela de pagos con operaciones verificadas del lado servidor (sin secretos en el cliente), webhooks firmados, conciliación y políticas de reembolso.
-5. Logística, información legal, protección de datos y pruebas E2E antes de lanzar.
-
-> Historial original: la tienda antigua simulaba pagos exitosos y vaciaba el carrito. NOX elimina esa conducta; no debe reactivarse sin integración real de pedidos y pagos.
+## Futuras fases
+1. Definir marca comercial, colecciones y segmento; adquirir/licenciar fotos originales, descripciones y precios reales.
+2. Backend de productos/SKU, variantes, existencias, reservas e imágenes administrables; PDP completo y tablas de tallas por producto.
+3. Cuentas y direcciones, backoffice, pedidos, estados, cancelación y devoluciones.
+4. Integración de Stripe con webhooks firmados, validaciones de importe en servidor, idempotencia y conciliación.
+5. Logística, facturación, términos, privacidad, accesibilidad y E2E de compra antes de producción.

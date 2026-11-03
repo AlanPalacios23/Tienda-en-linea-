@@ -1,35 +1,78 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const store = require("../store-core.js");
-const catalog = [
-  { id:"a", name:"Audífonos Órbita", description:"Sonido portátil", category:"audio", price:100 },
-  { id:"b", name:"Teclado", description:"Oficina", category:"setup", price:250 }
-];
-test("filtra ignorando acentos, mayúsculas y por categoría", () => {
-  assert.deepEqual(store.filterProducts(catalog,{query:"ORBITA",category:"audio"}).map(p=>p.id),["a"]);
-  assert.equal(store.filterProducts(catalog,{query:"orbita",category:"setup"}).length,0);
+globalThis.NoxCatalog = undefined;
+require("../catalog.js");
+const catalog = globalThis.NoxCatalog;
+test("catálogo exclusivo de moda y cada variante es única y válida", () => {
+  assert.equal(catalog.length,12);
+  assert.equal(new Set(catalog.map(p => p.id)).size,catalog.length);
+  for (const p of catalog) {
+    assert.ok(["ropa","calzado","accesorios"].includes(p.category));
+    assert.ok(["mujer","hombre","unisex"].includes(p.audience));
+    assert.ok(Number.isSafeInteger(p.price) && p.price > 0);
+    assert.ok(p.sizes.length && p.colors.length);
+    assert.equal(new Set(p.sizes.map(s => s.id)).size,p.sizes.length);
+    assert.equal(new Set(p.colors.map(c => c.id)).size,p.colors.length);
+    assert.ok(p.image.startsWith("https://"));
+    for (const s of p.sizes) for (const c of p.colors)
+      assert.ok(store.resolveKey(store.makeKey(p,s.id,c.id),catalog));
+  }
 });
-test("ordena precios sin mutar catálogo original", () => {
-  assert.deepEqual(store.filterProducts(catalog,{sort:"price-desc"}).map(p=>p.id),["b","a"]);
-  assert.deepEqual(catalog.map(p=>p.id),["a","b"]);
+test("filtra sin acentos y combina tipo de prenda y público", () => {
+  const p = store.filterProducts(catalog,{query:"PANTALON",category:"ropa",audience:"mujer"});
+  assert.deepEqual(p.map(x=>x.id),["nox-103"]);
+  assert.equal(store.filterProducts(catalog,{query:"botín",audience:"hombre"}).length,0);
 });
-test("rechaza estado persistido corrupto o manipulado", () => {
-  assert.deepEqual(store.loadCart("{mal json",catalog),{});
-  assert.deepEqual(store.loadCart('{"a":3,"otro":42,"b":-1}',catalog),{a:3});
-  assert.deepEqual(store.loadCart('["a","b"]',catalog),{});
+test("unisex está disponible en cualquier selección de público", () => {
+  assert.ok(store.filterProducts(catalog,{audience:"mujer"}).some(p=>p.id==="nox-101"));
+  assert.ok(store.filterProducts(catalog,{audience:"hombre"}).some(p=>p.id==="nox-101"));
 });
-test("limita cantidades y mantiene únicamente IDs válidos", () => {
-  assert.deepEqual(store.changeQuantity({}, "a", 999, catalog),{a:20});
-  assert.deepEqual(store.changeQuantity({a:1}, "a", -1, catalog),{});
-  assert.deepEqual(store.changeQuantity({}, "inexistente", 1, catalog),{});
-  assert.deepEqual(store.changeQuantity({a:2}, "a", NaN, catalog),{a:2});
+test("ordena por precio y nombre sin modificar catálogo", () => {
+  const before = catalog.map(p=>p.id);
+  const asc = store.filterProducts(catalog,{sort:"price-asc"});
+  assert.ok(asc.every((p,i)=>i===0||asc[i-1].price<=p.price));
+  const desc = store.filterProducts(catalog,{sort:"price-desc"});
+  assert.ok(desc.every((p,i)=>i===0||desc[i-1].price>=p.price));
+  assert.deepEqual(catalog.map(p=>p.id),before);
 });
-test("calcula subtotal e ítems desde catálogo, no desde datos del navegador", () => {
-  const result = store.summary({a:2,b:1,unknown:50},catalog);
-  assert.equal(result.count,3);
-  assert.equal(result.subtotal,450);
-  assert.equal(result.rows.length,2);
+test("no permite meter variaciones inexistentes o IDs arbitrarios", () => {
+  const p = catalog[0];
+  assert.equal(store.makeKey(p,"xx","negro"),null);
+  assert.equal(store.makeKey(p,"m","mal"),null);
+  assert.equal(store.resolveKey("__proto__::m::negro",catalog),null);
+  assert.equal(store.resolveKey("nox-101::m",catalog),null);
 });
-test("no interpreta cantidades fraccionarias ni strings como enteros", () => {
-  assert.deepEqual(store.sanitizeCart({a:"10",b:1.5},catalog),{});
+test("carrito separa talla y color del mismo producto", () => {
+  const a = store.makeKey(catalog[0],"m","negro");
+  const b = store.makeKey(catalog[0],"l","hueso");
+  let cart=store.changeQuantity({},a,2,catalog);
+  cart=store.changeQuantity(cart,b,1,catalog);
+  const sum=store.summary(cart,catalog);
+  assert.equal(sum.count,3);
+  assert.equal(sum.rows.length,2);
+  assert.equal(sum.subtotal,1347);
+  assert.deepEqual(sum.rows.map(r=>r.size.label),["M","L"]);
+});
+test("nunca confía en precios guardados por el navegador", () => {
+  const key=store.makeKey(catalog[0],"m","negro");
+  const sum=store.summary({[key]:2, "fraude::m::negro":1000},catalog);
+  assert.equal(sum.subtotal,898);
+});
+test("carrito inválido, valores negativos y más de diez unidades no sobreviven", () => {
+  const key=store.makeKey(catalog[0],"m","negro");
+  assert.deepEqual(store.loadCart("{",catalog),{});
+  assert.deepEqual(store.loadCart(JSON.stringify({[key]:999,bad:-5}),catalog),{[key]:10});
+  assert.deepEqual(store.sanitizeCart({[key]:"2"},catalog),{});
+  assert.deepEqual(store.changeQuantity({[key]:1},key,-1,catalog),{});
+  assert.deepEqual(store.changeQuantity({},key,Number.NaN,catalog),{});
+});
+test("favoritos se limitan al catálogo, sin duplicados", () => {
+  assert.deepEqual(store.loadFavorites('["nox-101","bad","nox-101"]',catalog),["nox-101"]);
+  assert.deepEqual(store.toggleFavorite(["nox-101"],"nox-101",catalog),[]);
+  assert.deepEqual(store.toggleFavorite([],"bad",catalog),[]);
+});
+test("descarta carrito de tecnología v0.1 y JSON mal formado", () => {
+  assert.deepEqual(store.loadCart('{"1":3,"nox-001::m::negro":2}',catalog),{});
+  assert.deepEqual(store.loadCart("not-json",catalog),{});
 });
