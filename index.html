@@ -29,7 +29,7 @@
       <div class="hero-copy">
         <p class="eyebrow">THE FIRST DROP / 001</p>
         <h1 id="heroTitle">SIX DESIGNS.<br><em>ONE ATTITUDE.</em></h1>
-        <p>Seis playeras. Seis formas de expresarte. La primera colección NOX es un punto de partida para crear tu propia historia.</p>
+        <p>Seis playeras. Seis formas de expresarte. La primera colección NOX reúne seis diseños oversize con una identidad propia.</p>
         <a class="button light-button" href="#coleccion">Descubrir los diseños <span aria-hidden="true">↗</span></a>
         <div class="hero-index"><span>NOX / EDITION 001</span><span>EST. 2026</span></div>
       </div>
@@ -68,8 +68,8 @@
   </section>
   <section class="details shell" aria-label="Información comercial">
     <div><span>01 / INVENTARIO</span><h3>Unidades limitadas</h3><p>El servidor comprueba la talla elegida antes de iniciar el pago.</p></div>
-    <div><span>02 / PAGO</span><h3>Stripe Checkout</h3><p>Los pagos se procesarán de forma segura en la página de Stripe.</p></div>
-    <div><span>03 / DISPONIBILIDAD</span><h3>Existencias actualizadas</h3><p>Las piezas quedan reservadas temporalmente mientras se completa el pago.</p></div>
+    <div><span>02 / PAGO</span><h3>Pago seguro con Stripe</h3><p>Tarjetas y métodos disponibles según Stripe. Precio final visible antes de confirmar.</p></div>
+    <div><span>03 / DISPONIBILIDAD</span><h3>Envíos a todo México</h3><p>DHL Express nacional o entrega VIP en Tala, sujetos a disponibilidad operativa.</p></div>
   </section>
 </main>
 <footer class="footer">
@@ -81,8 +81,20 @@
   <header class="cart-head"><div><p class="eyebrow">YOUR SELECTION</p><h2 id="cartTitle">Tu bolsa <span id="cartLabelCount">(0)</span></h2></div>
     <button id="closeCart" type="button" class="close-icon" aria-label="Cerrar bolsa">×</button></header>
   <div class="cart-content" id="cartItems"></div>
-  <div class="cart-bottom"><div class="subtotal"><span>Subtotal</span><strong id="subtotal">Por confirmar</strong></div>
-    <p id="shippingNote">Envío y cargos aplicables se confirman antes de pagar.</p>
+  <div class="cart-bottom">
+    <fieldset class="delivery-selector"><legend>¿Dónde entregamos?</legend>
+      <label class="delivery-option"><input type="radio" name="shippingZone" value="national" checked>
+        <span><strong>Resto de México · DHL Express</strong><small>$149 MXN · gratis en compras superiores a $1,399. Entrega estimada de 2–3 días hábiles tras despacho, según cobertura.</small></span></label>
+      <label class="delivery-option"><input type="radio" name="shippingZone" value="tala">
+        <span><strong>Tala, Jalisco · Entrega VIP</strong><small>$49 MXN · objetivo de entrega en menos de 90 minutos, sujeto a horario y confirmación.</small></span></label>
+      <label class="postal-label" for="shippingPostal">Código postal de entrega</label>
+      <input class="postal-input" id="shippingPostal" type="text" maxlength="5" inputmode="numeric" pattern="[0-9]{5}" autocomplete="postal-code" placeholder="Ej. 44100" required>
+      <p id="localPromoMessage" class="promo-info" hidden>Solo en Tala: introduce <strong>NOXTALA</strong> en Stripe Checkout y cada playera pasa de $499 a $399. La dirección debe coincidir con la ciudad de Tala.</p>
+    </fieldset>
+    <div class="subtotal"><span>Subtotal de prendas</span><strong id="subtotal">Por confirmar</strong></div>
+    <div class="subtotal small-subtotal"><span>Envío estimado</span><strong id="shippingTotal">$149</strong></div>
+    <div class="subtotal final-total"><span>Total antes de promociones</span><strong id="grandTotal">Por confirmar</strong></div>
+    <p id="shippingNote">El importe final aparece en Stripe antes de confirmar el pago. Solo se permite el código NOXTALA para entrega local.</p>
     <button id="checkout" class="button checkout-button" type="button" disabled>Comprar con Stripe ↗</button>
     <p id="checkoutStatus" class="checkout-status" role="status">La compra estará disponible cuando se confirmen los precios.</p>
   </div>

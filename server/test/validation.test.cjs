@@ -16,15 +16,15 @@ test("ID de pedido debe ser UUID v4 generado por el cliente",()=>{
  assert.equal(stock.verifyRequestId(crypto.randomUUID()).length,36);
  assert.throws(()=>stock.verifyRequestId("abc"),{code:"INVALID_REQUEST_ID"});
 });
-test("modo live requiere habilitación separada y envío explícito",()=>{
+test("modo live requiere habilitación separada y promoción autorizada",()=>{
  const env={
   PUBLIC_BASE_URL:"https://nox.example.com",DATABASE_URL:"postgres://example",
   STRIPE_WEBHOOK_SECRET:"whsec_testplaceholder",STRIPE_API_KEY:"rk_live_placeholder",
-  CHECKOUT_ENABLED:"true",SHIPPING_CENTS:"0"
+  CHECKOUT_ENABLED:"true",STRIPE_NOXTALA_PROMO_ID:"promo_testOnly"
  };
  assert.throws(()=>settings(env),/ALLOW_LIVE_CHECKOUT/);
  assert.equal(settings({...env,ALLOW_LIVE_CHECKOUT:"true"}).checkoutEnabled,true);
- assert.throws(()=>settings({...env,ALLOW_LIVE_CHECKOUT:"true",SHIPPING_CENTS:""}),/Checkout sin/);
+ assert.throws(()=>settings({...env,ALLOW_LIVE_CHECKOUT:"true",STRIPE_NOXTALA_PROMO_ID:""}),/Checkout sin/);
  assert.throws(()=>settings({...env,PUBLIC_BASE_URL:"http://example.com",ALLOW_LIVE_CHECKOUT:"true"}),/PUBLIC_BASE_URL/);
 });
 test("Stripe rechaza firmas falsas de webhook (sin tráfico real)",()=>{

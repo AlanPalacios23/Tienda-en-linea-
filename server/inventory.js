@@ -1,5 +1,6 @@
 "use strict";
 const crypto=require("node:crypto");
+const pricing=require("./pricing");
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SKU=/^nox-0[1-6]-(M|L)$/;
 class ShopError extends Error{
@@ -37,11 +38,13 @@ async function transaction(pool,fn){
     throw e;
   } finally {client.release();}
 }
-async function reserve(pool,cart,requestId,shippingCents){
+async function reserve(pool,cart,requestId,delivery){
+  if(!delivery || typeof delivery!=="object")throw new pricing.PricingError("Dirección necesaria");
+  const zone=pricing.validateZone(delivery.shipping_zone,delivery.address);
+  const {city,state,postal_code}=delivery.address;
   const items=parseItems(cart);
   verifyRequestId(requestId);
-  if(!Number.isSafeInteger(shippingCents)||shippingCents<0)
-    throw new Error("Shipping not configured");
+
   return transaction(pool,async db=>{
     const previous=await db.query("SELECT id,status,stripe_session_id FROM orders WHERE request_id=$1 FOR UPDATE",[requestId]);
     if(previous.rows.length) return {existing:true,...previous.rows[0]};
@@ -66,12 +69,16 @@ async function reserve(pool,cart,requestId,shippingCents){
         throw new ShopError(400,"Importe fuera del rango permitido","AMOUNT_LIMIT");
       return {...item,name:row.name,unit_price_cents:row.price_cents};
     });
+    const quantity=lines.reduce((n,i)=>n+i.quantity,0);
+    const shippingCents=pricing.shippingFor(zone,itemsCents);
     const id=crypto.randomUUID();
     const expiration=new Date(Date.now()+35*60*1000);
     await db.query(
-      "INSERT INTO orders(id,request_id,status,items_cents,shipping_cents,amount_cents,checkout_expires_at) "+
-      "VALUES($1,$2,'creating',$3,$4,$5,$6)",
-      [id,requestId,itemsCents,shippingCents,itemsCents+shippingCents,expiration]
+      "INSERT INTO orders(id,request_id,status,items_cents,shipping_cents,amount_cents,checkout_expires_at,"+
+      "shipping_zone,postal_code,shipping_city,shipping_state,quantity) "+
+      "VALUES($1,$2,'creating',$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      [id,requestId,itemsCents,shippingCents,itemsCents+shippingCents,expiration,
+       zone,postal_code,city,state,quantity]
     );
     for(const line of lines) {
       await db.query("INSERT INTO order_items(order_id,sku,quantity,unit_price_cents) VALUES($1,$2,$3,$4)",
@@ -80,7 +87,7 @@ async function reserve(pool,cart,requestId,shippingCents){
         [line.sku,line.quantity]);
     }
     return {existing:false,id,status:"creating",expiration,lines,itemsCents,
-      shippingCents,amountCents:itemsCents+shippingCents};
+      shippingCents,shippingZone:zone,quantity,amountCents:itemsCents+shippingCents};
   });
 }
 async function snapshot(pool,orderId){
@@ -124,9 +131,16 @@ async function handleStripeEvent(pool,event){
       ["checkout.session.completed","checkout.session.async_payment_succeeded"].includes(event.type);
     const expired=event.type==="checkout.session.expired" && session.status==="expired";
     const failed=event.type==="checkout.session.async_payment_failed";
-    if(paid && (session.currency!=="mxn" || session.amount_total!==order.amount_cents)){
-      await db.query("UPDATE orders SET status='needs_review',updated_at=now() WHERE id=$1",[id]);
-      return "needs_review";
+    let appliedDiscount=0;
+    if(paid) {
+      const inspected=pricing.inspectPayment(order,session);
+      if(!inspected.valid) {
+        // Paga pero hay inconsistencia de dirección/descuento/importe: retener reserva,
+        // bloquear cumplimiento y requerir revisión / eventual devolución.
+        await db.query("UPDATE orders SET status='needs_review',updated_at=now() WHERE id=$1",[id]);
+        return "needs_review";
+      }
+      appliedDiscount=inspected.discount_cents;
     }
     if(order.status==="paid")return "paid";
     if(["expired","failed","needs_review"].includes(order.status)){
@@ -150,8 +164,8 @@ async function handleStripeEvent(pool,event){
     const status=paid?"paid":(expired?"expired":"failed");
     await db.query(
       "UPDATE orders SET status=$2,stripe_session_id=COALESCE(stripe_session_id,$3),"+
-      "stripe_payment_intent_id=COALESCE(stripe_payment_intent_id,$4),updated_at=now() WHERE id=$1",
-      [id,status,session.id,typeof session.payment_intent==="string"?session.payment_intent:null]);
+      "stripe_payment_intent_id=COALESCE(stripe_payment_intent_id,$4),discount_cents=$5,updated_at=now() WHERE id=$1",
+      [id,status,session.id,typeof session.payment_intent==="string"?session.payment_intent:null,appliedDiscount]);
     return status;
   });
 }

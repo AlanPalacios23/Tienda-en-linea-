@@ -9,6 +9,7 @@ const {Pool}=require("pg");
 const Stripe=require("stripe");
 const {settings}=require("./config");
 const inventory=require("./inventory");
+const pricing=require("./pricing");
 const config=settings();
 const pool=new Pool({connectionString:config.databaseUrl,max:12});
 const stripe=config.stripeKey?new Stripe(config.stripeKey,{apiVersion:"2026-09-30.endive"}):null;
@@ -55,13 +56,19 @@ function clientPayload(order) {
    shipping_rate_data:{
     type:"fixed_amount",
     fixed_amount:{amount:order.shipping_cents,currency:"mxn"},
-    display_name:"Envío de NOX"
+    display_name:order.shipping_zone==="tala"?
+      "Entrega NOX VIP · Tala (sujeta a cobertura)":
+      (order.shipping_cents===0?"Envío DHL Express · Gratis":"Envío DHL Express · Nacional")
    }
   }],
+  allow_promotion_codes:order.shipping_zone==="tala",
   customer_creation:"always",
   success_url:config.baseUrl+"/success.html?order_id="+order.id+"&session_id={CHECKOUT_SESSION_ID}",
   cancel_url:config.baseUrl+"/cancel.html",
-  metadata:{order_id:order.id},
+  metadata:{order_id:order.id,shipping_zone:order.shipping_zone},
+  custom_text:{submit:{message:order.shipping_zone==="tala"?
+    "Si vives en Tala, ingresa NOXTALA para obtener $100 de descuento por playera. Solo válido en la ciudad de Tala, Jalisco.":
+    "Envío nacional por DHL Express. Plazo estimado de entrega sujeto a cobertura."}},
   payment_intent_data:{metadata:{order_id:order.id}}
  };
 }
@@ -73,8 +80,10 @@ async function createStripeSession(order){
   idempotencyKey:"nox-order-"+order.id
  });
  if(!session.url)throw new Error("Stripe no devolvió URL");
- if(session.amount_total!==order.amount_cents)
-  throw new Error("Stripe total no coincide con total de NOX");
+ // El importe definitivo se verifica en el webhook. Checkout puede aplicar
+ // código NOXTALA y escoger envío tras mostrar la pantalla de pago.
+ if(session.currency && session.currency!=="mxn")
+   throw new Error("Stripe devolvió una moneda diferente a MXN");
  await inventory.attachSession(pool,order.id,session.id);
  return session;
 }
@@ -115,8 +124,13 @@ app.get("/api/catalog",async(req,res)=>{
   }
   const products=[...catalog.values()];
   res.set("Cache-Control","no-store");
-  res.json({currency:"MXN",products,checkout_enabled:config.checkoutEnabled && !!stripe &&
-    products.length===6 && products.every(p=>Number.isSafeInteger(p.price_cents)&&p.price_cents>0)});
+  res.json({currency:"MXN",products,shipping:{
+    national_cents:pricing.NATIONAL_SHIPPING_CENTS,
+    free_above_cents:pricing.FREE_SHIPPING_ABOVE_CENTS,
+    tala_cents:pricing.LOCAL_SHIPPING_CENTS,
+    tala_promo_code:"NOXTALA"
+   },checkout_enabled:config.checkoutEnabled && !!stripe &&
+    products.length===6 && products.every(p=>p.price_cents===pricing.PRICE_CENTS)});
  }catch(err){
   console.error("NOX_CATALOG_ERROR",err.code||"unknown");
   jsonError(res,503,"CATALOG_UNAVAILABLE","El catálogo no está disponible temporalmente");
@@ -139,7 +153,19 @@ app.post("/api/checkout",checkoutLimiter,async(req,res)=>{
  const data=req.body;
  try{
   if(!data||typeof data!=="object")throw new inventory.ShopError(400,"Carrito inválido","INVALID_CART");
-  const result=await inventory.reserve(pool,data.items,data.request_id,config.shippingCents);
+  const delivery={
+   shipping_zone:data.shipping_zone,
+   address:{country:"MX",city:data.city,state:data.state,postal_code:data.postal_code}
+  };
+  pricing.validateZone(delivery.shipping_zone,delivery.address);
+  // Validate promotion configured in this Stripe account before reserving stock.
+  if(delivery.shipping_zone==="tala"){
+   const promo=await stripe.promotionCodes.retrieve(config.localPromoId);
+   if(!promo.active || String(promo.code).toUpperCase()!=="NOXTALA" ||
+      promo.coupon?.percent_off!==20.04)
+      return jsonError(res,503,"PROMO_UNAVAILABLE","La promoción NOXTALA no está configurada en Stripe");
+  }
+  const result=await inventory.reserve(pool,data.items,data.request_id,delivery);
   let order;
   if(result.existing){
    if(result.status==="paid")
@@ -155,7 +181,7 @@ app.post("/api/checkout",checkoutLimiter,async(req,res)=>{
   }else{
    order={
     id:result.id,lines:result.lines,amount_cents:result.amountCents,
-    shipping_cents:result.shippingCents,checkout_expires_at:result.expiration
+    shipping_cents:result.shippingCents,shipping_zone:result.shippingZone,checkout_expires_at:result.expiration
    };
   }
   if(new Date(order.checkout_expires_at).getTime()-Date.now()<30*60*1000)
@@ -164,7 +190,7 @@ app.post("/api/checkout",checkoutLimiter,async(req,res)=>{
   res.set("Cache-Control","no-store");
   res.json({url:session.url,order_id:order.id});
  }catch(err){
-  if(err instanceof inventory.ShopError)
+  if(err instanceof inventory.ShopError || err instanceof pricing.PricingError)
    return jsonError(res,err.httpStatus,err.code,err.message);
   if(err.code==="23505")
    return jsonError(res,409,"DUPLICATE_REQUEST","Este checkout ya se está procesando; inténtalo de nuevo");

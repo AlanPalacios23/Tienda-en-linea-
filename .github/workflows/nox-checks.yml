@@ -40,6 +40,7 @@ jobs:
           node --check server/inventory.js
           node --check server/config.js
           node --check server/reconcile.js
+          node --check server/pricing.js
       - name: Migrar y verificar inventario inicial
         run: npm --prefix server run migrate
       - name: Pruebas de UI y contrato
@@ -62,8 +63,12 @@ jobs:
               const c=JSON.parse(body);
               if(c.products.length!==6 || c.checkout_enabled!==false)process.exit(1);
               for(const p of c.products){
-                if(p.variants.length!==2)process.exit(1);
+                if(p.variants.length!==2 || p.price_cents!==49900)process.exit(1);
               }
+              if(c.shipping.national_cents!==14900 ||
+                c.shipping.free_above_cents!==139900 ||
+                c.shipping.tala_cents!==4900 ||
+                c.shipping.tala_promo_code!=="NOXTALA")process.exit(1);
             });'
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/api/checkout -H 'Content-Type: application/json' -d '{}')" = "503"
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/server/.env.example)" = "404"

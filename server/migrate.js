@@ -7,6 +7,7 @@ async function run() {
   const pool=new Pool({connectionString:process.env.DATABASE_URL});
   try {
     await pool.query(fs.readFileSync(path.join(__dirname,"schema.sql"),"utf8"));
+    await pool.query(fs.readFileSync(path.join(__dirname,"migrations/002_nox_commercial_rules.sql"),"utf8"));
     const result=await pool.query("SELECT COUNT(*)::integer AS designs, (SELECT SUM(total)::integer FROM inventory) AS stock FROM designs");
     console.log("NOX_SCHEMA_READY",result.rows[0]);
   } finally {await pool.end();}
