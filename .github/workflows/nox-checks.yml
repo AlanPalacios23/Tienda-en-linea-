@@ -73,3 +73,8 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/api/checkout -H 'Content-Type: application/json' -d '{}')" = "503"
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/server/.env.example)" = "404"
           curl -fsS http://localhost:8080/success.js >/dev/null
+
+      - name: Generar sitio NOX para Netlify
+        run: node scripts/build-netlify-preview.cjs
+      - name: Pruebas de la vista previa segura
+        run: node --test tests/netlify-preview.test.cjs
