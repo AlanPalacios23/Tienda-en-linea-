@@ -24,6 +24,8 @@ test("modo live requiere habilitación separada y promoción autorizada",()=>{
  };
  assert.throws(()=>settings(env),/ALLOW_LIVE_CHECKOUT/);
  assert.equal(settings({...env,ALLOW_LIVE_CHECKOUT:"true"}).checkoutEnabled,true);
+ assert.equal(settings({...env,ALLOW_LIVE_CHECKOUT:"true"}).talaVipReady,false);
+ assert.equal(settings({...env,ALLOW_LIVE_CHECKOUT:"true",TALA_VIP_READY:"true"}).talaVipReady,true);
  assert.throws(()=>settings({...env,ALLOW_LIVE_CHECKOUT:"true",STRIPE_NOXTALA_PROMO_ID:""}),/Checkout sin/);
  assert.throws(()=>settings({...env,PUBLIC_BASE_URL:"http://example.com",ALLOW_LIVE_CHECKOUT:"true"}),/PUBLIC_BASE_URL/);
 });

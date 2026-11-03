@@ -128,9 +128,11 @@ app.get("/api/catalog",async(req,res)=>{
     national_cents:pricing.NATIONAL_SHIPPING_CENTS,
     free_above_cents:pricing.FREE_SHIPPING_ABOVE_CENTS,
     tala_cents:pricing.LOCAL_SHIPPING_CENTS,
-    tala_promo_code:"NOXTALA"
+    tala_promo_code:"NOXTALA",
+    national_available:config.dhlReady,
+    tala_available:config.talaVipReady
    },checkout_enabled:config.checkoutEnabled && !!stripe &&
-    products.length===6 && products.every(p=>p.price_cents===pricing.PRICE_CENTS)});
+    (config.talaVipReady || config.dhlReady) && products.length===6 && products.every(p=>p.price_cents===pricing.PRICE_CENTS)});
  }catch(err){
   console.error("NOX_CATALOG_ERROR",err.code||"unknown");
   jsonError(res,503,"CATALOG_UNAVAILABLE","El catálogo no está disponible temporalmente");
@@ -158,6 +160,10 @@ app.post("/api/checkout",checkoutLimiter,async(req,res)=>{
    address:{country:"MX",city:data.city,state:data.state,postal_code:data.postal_code}
   };
   pricing.validateZone(delivery.shipping_zone,delivery.address);
+  if(delivery.shipping_zone==="tala" && !config.talaVipReady)
+    return jsonError(res,503,"LOCAL_DELIVERY_PENDING","La entrega VIP Tala aún no está habilitada");
+  if(delivery.shipping_zone==="national" && !config.dhlReady)
+    return jsonError(res,503,"NATIONAL_DELIVERY_PENDING","El envío DHL aún no está habilitado");
   // Validate promotion configured in this Stripe account before reserving stock.
   if(delivery.shipping_zone==="tala"){
    const promo=await stripe.promotionCodes.retrieve(config.localPromoId);

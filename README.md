@@ -79,3 +79,13 @@ DATABASE_URL='postgresql://...pruebas' npm --prefix server test
 \`\`\`
 
 El proyecto no cuenta todavía con autenticación administrativa, facturación ni automatización logística; esas funciones son prioridades posteriores al checkout E2E.
+
+
+### Activación operativa por zona (nueva protección)
+Además de habilitar el checkout general, debe confirmarse cada operación logística:
+- \`DHL_READY=true\` **únicamente** cuando exista acuerdo verificable de recolección, cobertura, tarifa y política de 2–3 días.
+- \`TALA_VIP_READY=true\` **únicamente** cuando se haya probado personal, horario y capacidad real para entregas en 90 minutos.
+El backend no crea sesiones para una zona no habilitada; la tienda informa que esa modalidad está en preparación. Ambas banderas empiezan en \`false\`.
+
+### Revisión Stripe LIVE (lectura)
+El código \`NOXTALA\` todavía **no existe como promoción LIVE** en la cuenta conectada. No se creó promoción ni se hizo cargo alguno. Es necesario preparar primero \`NOXTALA\` en sandbox y probar que Stripe cobra el total correcto, incluso compras con múltiples tallas.

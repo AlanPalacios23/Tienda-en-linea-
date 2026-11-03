@@ -20,8 +20,10 @@ function settings(env=process.env) {
     throw new Error("Checkout sin base de datos, webhook, Stripe o promoción NOXTALA configurada");
   if(enabled && live && env.ALLOW_LIVE_CHECKOUT!=="true")
     throw new Error("Protección para dinero real: ALLOW_LIVE_CHECKOUT=true");
+  const talaVipReady=env.TALA_VIP_READY==="true";
+  const dhlReady=env.DHL_READY==="true";
   return {port:Number(env.PORT||8080),baseUrl:env.PUBLIC_BASE_URL.replace(/\/$/,""),
-    databaseUrl:env.DATABASE_URL,checkoutEnabled:enabled,liveMode:live,localPromoId,
+    databaseUrl:env.DATABASE_URL,checkoutEnabled:enabled,liveMode:live,localPromoId,talaVipReady,dhlReady,
     stripeKey:key,webhookSecret:env.STRIPE_WEBHOOK_SECRET||"",
     trustProxy:env.TRUST_PROXY==="true"};
 }

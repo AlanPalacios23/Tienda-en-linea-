@@ -15,7 +15,7 @@
  let catalog=[];
  let cart={};
  let checkoutAvailable=false;
- let shippingPolicy={national_cents:14900,free_above_cents:139900,tala_cents:4900};
+ let shippingPolicy={national_cents:14900,free_above_cents:139900,tala_cents:4900,national_available:false,tala_available:false};
  let checkoutRequestId=null;
  let lastFocus=null;
  let timer=null;
@@ -118,13 +118,15 @@
     (qty>=variant.available?"disabled":"")+' aria-label="Agregar una">+</button>'+
     '<button type="button" data-remove="'+safe(sku)+'" class="remove">Eliminar</button></div></div></article>'
   ).join(""):'<div class="cart-empty"><span>◇</span><h3>Tu bolsa está vacía</h3><p>Explora nuestros seis diseños.</p><button type="button" id="continue" class="button dark-button">Explorar colección ↗</button></div>';
-  const ready=checkoutAvailable && allPriced && lines.length>0 && eligiblePostal();
+  const zoneReady=zone==="tala"?shippingPolicy.tala_available:shippingPolicy.national_available;
+  const ready=checkoutAvailable && zoneReady && allPriced && lines.length>0 && eligiblePostal();
   ui.checkout.disabled=!ready;
   ui.checkoutStatus.textContent=ready?
     (zone==="tala"?"Ingresa NOXTALA en Stripe Checkout para reducir cada prenda a $399. Se validará tu dirección.":
       "Stripe confirmará el total nacional y el pago de forma segura."):
     (!checkoutAvailable?"Los pagos aún no están habilitados; estamos finalizando la tienda.":
-      (!eligiblePostal()?"Introduce un código postal válido para la zona elegida.":"Añade una playera para continuar."));
+      (!zoneReady?"Estamos preparando las entregas para esta zona.":
+      (!eligiblePostal()?"Introduce un código postal válido para la zona elegida.":"Añade una playera para continuar.")));
   persist();
  }
  function updateQuantity(sku,delta){
