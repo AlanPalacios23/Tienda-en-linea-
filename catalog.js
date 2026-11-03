@@ -1,0 +1,11 @@
+/* Catálogo ilustrativo: no representa inventario, disponibilidad ni ofertas reales. */
+window.NoxCatalog = Object.freeze([
+  { id:"nox-001", name:"Auriculares Aura", category:"audio", price:1499, tag:"Selección NOX", image:"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=85", description:"Sonido personal con una silueta atemporal." },
+  { id:"nox-002", name:"Teclado Axis", category:"setup", price:1899, tag:"Favorito", image:"https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?auto=format&fit=crop&w=900&q=85", description:"Una pieza protagonista para tu espacio." },
+  { id:"nox-003", name:"Bocina Nova", category:"audio", price:1299, tag:"Nuevo", image:"https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=900&q=85", description:"Diseño compacto, personalidad inmensa." },
+  { id:"nox-004", name:"Mouse Flux", category:"setup", price:899, tag:"", image:"https://images.unsplash.com/photo-1527814050087-3793815479db?auto=format&fit=crop&w=900&q=85", description:"Comodidad y precisión para cada jornada." },
+  { id:"nox-005", name:"Reloj Orbit", category:"smart", price:2299, tag:"Selección NOX", image:"https://images.unsplash.com/photo-1579586337278-3f436c25d4a1?auto=format&fit=crop&w=900&q=85", description:"Una nueva perspectiva de tu día." },
+  { id:"nox-006", name:"Audífonos Pulse", category:"audio", price:1199, tag:"", image:"https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=900&q=85", description:"Libertad de movimiento y estilo limpio." },
+  { id:"nox-007", name:"Monitor Frame", category:"setup", price:6499, tag:"Nuevo", image:"https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=900&q=85", description:"Tu escritorio, desde otra perspectiva." },
+  { id:"nox-008", name:"Cargador Volt", category:"accesorios", price:699, tag:"", image:"https://images.unsplash.com/photo-1609592810795-8c47e5b89ec8?auto=format&fit=crop&w=900&q=85", description:"Un accesorio simple para acompañarte." }
+]);
