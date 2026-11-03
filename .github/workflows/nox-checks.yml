@@ -46,3 +46,25 @@ jobs:
         run: node --test tests/*.test.cjs
       - name: Pruebas de Stripe y stock concurrente en PostgreSQL
         run: npm --prefix server test
+      - name: HTTP smoke test, catálogo y rutas privadas
+        run: |
+          node server/index.js > /tmp/nox-api.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          for i in $(seq 1 15); do
+            if curl -fsS http://localhost:8080/api/healthz >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://localhost:8080/api/catalog | node -e '
+            let body="";
+            process.stdin.on("data",x=>body+=x);
+            process.stdin.on("end",()=>{
+              const c=JSON.parse(body);
+              if(c.products.length!==6 || c.checkout_enabled!==false)process.exit(1);
+              for(const p of c.products){
+                if(p.variants.length!==2)process.exit(1);
+              }
+            });'
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/api/checkout -H 'Content-Type: application/json' -d '{}')" = "503"
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/server/.env.example)" = "404"
+          curl -fsS http://localhost:8080/success.js >/dev/null

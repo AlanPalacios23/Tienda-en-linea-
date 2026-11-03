@@ -4,6 +4,7 @@ const fs=require("node:fs");
 const path=require("node:path");
 const express=require("express");
 const helmet=require("helmet");
+const {rateLimit}=require("express-rate-limit");
 const {Pool}=require("pg");
 const Stripe=require("stripe");
 const {settings}=require("./config");
@@ -130,7 +131,9 @@ app.get("/api/orders/:id/status",async(req,res)=>{
   res.json({status:row.rows[0].status});
  }catch(_){jsonError(res,503,"TEMPORARY","No se puede consultar el pedido");}
 });
-app.post("/api/checkout",async(req,res)=>{
+const checkoutLimiter=rateLimit({windowMs:15*60*1000,limit:8,standardHeaders:"draft-8",legacyHeaders:false,
+  message:{error:"RATE_LIMITED",message:"Demasiados intentos de pago. Intenta nuevamente más tarde."}});
+app.post("/api/checkout",checkoutLimiter,async(req,res)=>{
  if(!config.checkoutEnabled || !stripe)
   return jsonError(res,503,"CHECKOUT_DISABLED","Próximamente podrás pagar aquí");
  const data=req.body;
