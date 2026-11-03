@@ -127,6 +127,24 @@ async function handleStripeEvent(pool,event){
     const order=found.rows[0];
     if(order.stripe_session_id && order.stripe_session_id!==session.id)
       throw new ShopError(409,"Sesión de Stripe incorrecta","SESSION_MISMATCH");
+    // Guardar contacto y dirección desde Stripe, exclusivamente para
+    // operaciones internas. No se exportan en el endpoint público de estado.
+    const shippingInfo=session?.collected_information?.shipping_details||session?.shipping_details||{};
+    const address=pricing.addressFromStripe(session);
+    const email=typeof session?.customer_details?.email==="string"?
+      session.customer_details.email.slice(0,320):null;
+    const recipient=typeof shippingInfo?.name==="string"?
+      shippingInfo.name.slice(0,160):null;
+    const phone=typeof shippingInfo?.phone==="string"?
+      shippingInfo.phone.slice(0,35):null;
+    if(address || email || recipient || phone) {
+      await db.query(
+        "UPDATE orders SET fulfillment_address=COALESCE($2::jsonb,fulfillment_address),"+
+        "customer_email=COALESCE($3,customer_email),recipient_name=COALESCE($4,recipient_name),"+
+        "recipient_phone=COALESCE($5,recipient_phone),updated_at=now() WHERE id=$1",
+        [id,address?JSON.stringify(address):null,email,recipient,phone]
+      );
+    }
     const paid=session.payment_status==="paid" &&
       ["checkout.session.completed","checkout.session.async_payment_succeeded"].includes(event.type);
     const expired=event.type==="checkout.session.expired" && session.status==="expired";

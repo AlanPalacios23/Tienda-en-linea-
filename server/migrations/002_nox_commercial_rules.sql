@@ -11,3 +11,9 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS quantity integer;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_cents integer NOT NULL DEFAULT 0
  CHECK(discount_cents >= 0);
 -- No se actualizan pedidos históricos ni cantidades iniciales tras ventas.
+
+-- Datos exclusivamente para cumplimiento operativo; no deben exponerse a clientes terceros.
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS fulfillment_address jsonb;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS recipient_name text;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS recipient_phone text;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_email text;

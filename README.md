@@ -89,3 +89,7 @@ El backend no crea sesiones para una zona no habilitada; la tienda informa que e
 
 ### Revisión Stripe LIVE (lectura)
 El código \`NOXTALA\` todavía **no existe como promoción LIVE** en la cuenta conectada. No se creó promoción ni se hizo cargo alguno. Es necesario preparar primero \`NOXTALA\` en sandbox y probar que Stripe cobra el total correcto, incluso compras con múltiples tallas.
+
+
+### Datos de entrega y privacidad
+Los eventos firmados de Stripe pueden guardar en PostgreSQL la dirección de entrega y los datos de contacto necesarios para preparar pedidos. No hay ruta pública que entregue esos campos. Se requiere todavía definir retención/eliminación, controles de acceso de empleados y aviso de privacidad; **la captura de dirección en una base de datos no sustituye un panel de cumplimiento de pedidos**.

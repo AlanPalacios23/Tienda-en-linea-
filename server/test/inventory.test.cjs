@@ -64,6 +64,8 @@ test("Inventario NOX y protección de checkout",async t=>{
    assert.equal(await stock.handleStripeEvent(pool,event),"duplicate");
    const q=await pool.query("SELECT reserved,sold FROM inventory WHERE sku='nox-03-M'");
    assert.deepEqual(q.rows[0],{reserved:0,sold:2});
+   const customer=await pool.query("SELECT fulfillment_address,customer_email FROM orders WHERE id=$1",[r.id]);
+   assert.equal(customer.rows[0].fulfillment_address.postal_code,"44100");
   });
   await t.test("evento de pago pendiente mantiene inventario hasta confirmación asíncrona",async()=>{
    await reset();
